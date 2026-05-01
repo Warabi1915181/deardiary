@@ -8,15 +8,13 @@
 import SwiftUI
 
 struct ContentView: View {
-  @State private var numberOfDays = 0
-
   var body: some View {
-    VStack {
-      Image(systemName: "globe")
-        .imageScale(.large)
-        .foregroundStyle(.tint)
-      Text("一起了\(numberOfDays)天")
+    TabView {
+      Tab("Home", systemImage: "house") {
+        HomeView()
+      }
     }
+
   }
 }
 

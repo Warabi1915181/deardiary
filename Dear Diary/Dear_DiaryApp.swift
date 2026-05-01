@@ -12,6 +12,7 @@ struct Dear_DiaryApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+            .font(.regular)
         }
     }
 }
