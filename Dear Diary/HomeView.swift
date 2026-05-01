@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct AnniversaryCard: View {
+  var anniversaryDate: Date
   var numberOfDays: Int
 
   var body: some View {
@@ -14,11 +15,14 @@ struct AnniversaryCard: View {
             .fontWeight(.semibold)
         }
         Text("\(numberOfDays)")
-        .font(.fancy(size: 38))
-        .fontWeight(.bold)
+          .font(.fancy(size: 38))
+        Text("days left")
+          .fontWeight(.semibold)
+        Text(anniversaryDate.formatted(date: .abbreviated, time: .omitted))
+          .font(.regular)
       }
       .frame(maxWidth: .infinity, alignment: .leading)
-      .padding(.vertical, 32)
+      .padding(.vertical, 16)
       .padding(.horizontal, 16)
       .background(
         RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -32,9 +36,24 @@ struct HomeView: View {
   @SceneStorage("HomeView.datingStartDay") private var datingStartDay: Date?
   @State private var isShowingStartDayModal = false
 
+  /// Inclusive bounds; `endDate` is today (same calendar day in local TZ), last selectable instant that day.
+  private var dateRange: ClosedRange<Date> {
+    let calendar = Calendar.current
+    let now = Date()
+    let startDate = calendar.date(byAdding: .year, value: -200, to: now) ?? Date.distantPast
+    let todayStart = calendar.startOfDay(for: now)
+    let endDate =
+      calendar.date(bySettingHour: 23, minute: 59, second: 59, of: todayStart) ?? todayStart
+    return startDate...endDate
+  }
+
   private var datingStartDayBinding: Binding<Date> {
     Binding(
-      get: { datingStartDay ?? Date() },
+      get: {
+        let raw = datingStartDay ?? Date()
+        let bounds = dateRange
+        return min(max(raw, bounds.lowerBound), bounds.upperBound)
+      },
       set: {
         datingStartDay = $0
         isShowingStartDayModal = false
@@ -42,16 +61,39 @@ struct HomeView: View {
     )
   }
 
-  var numberOfDays: Int {
-    guard let startDay = datingStartDay else { return 0 }
-    return Calendar.current.dateComponents([.day], from: startDay, to: Date()).day ?? 0
+  private var anniversaryAnchorDay: Date {
+    datingStartDay ?? Date()
+  }
+
+  /// Next calendar occurrence of anchor month/day (local TZ), inclusive of today.
+  private var anniversaryDate: Date {
+    let calendar = Calendar.current
+    let todayStart = calendar.startOfDay(for: Date())
+    let m = calendar.component(.month, from: anniversaryAnchorDay)
+    let d = calendar.component(.day, from: anniversaryAnchorDay)
+    let year = calendar.component(.year, from: Date())
+    var dc = DateComponents(year: year, month: m, day: d)
+    guard var candidate = calendar.date(from: dc) else {
+      return todayStart
+    }
+    if calendar.startOfDay(for: candidate) < todayStart {
+      dc.year = year + 1
+      candidate = calendar.date(from: dc) ?? candidate
+    }
+    return calendar.startOfDay(for: candidate)
+  }
+
+  private var daysUntilAnniversary: Int {
+    let calendar = Calendar.current
+    let todayStart = calendar.startOfDay(for: Date())
+    return calendar.dateComponents([.day], from: todayStart, to: anniversaryDate).day ?? 0
   }
 
   var body: some View {
     ZStack {
       Color("Backdrop").ignoresSafeArea()
       VStack(spacing: 16) {
-        AnniversaryCard(numberOfDays: numberOfDays)
+        AnniversaryCard(anniversaryDate: anniversaryDate, numberOfDays: daysUntilAnniversary)
         Button("Set Dating Start Day") {
           isShowingStartDayModal = true
         }
@@ -63,6 +105,7 @@ struct HomeView: View {
           DatePicker(
             "Dating Start Day",
             selection: datingStartDayBinding,
+            in: dateRange,
             displayedComponents: [.date]
           )
           .datePickerStyle(.graphical)

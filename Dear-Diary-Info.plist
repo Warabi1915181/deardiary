@@ -16,7 +16,10 @@
 		<string>PlayfairDisplay-MediumItalic.ttf</string>
 		<string>PlayfairDisplay-Black.ttf</string>
 		<string>PlayfairDisplay-BlackItalic.ttf</string>
-		<string>GreatVibes-Regular.ttf</string>
+		<string>DancingScript-Regular.ttf</string>
+		<string>DancingScript-Medium.ttf</string>
+		<string>DancingScript-SemiBold.ttf</string>
+		<string>DancingScript-Bold.ttf</string>
 	</array>
 </dict>
 </plist>
