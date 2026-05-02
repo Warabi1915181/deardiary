@@ -33,36 +33,11 @@ struct AnniversaryCard: View {
 }
 
 struct HomeView: View {
-  @SceneStorage("HomeView.datingStartDay") private var datingStartDay: Date?
-  @State private var isShowingStartDayModal = false
-
-  /// Inclusive bounds; `endDate` is today (same calendar day in local TZ), last selectable instant that day.
-  private var dateRange: ClosedRange<Date> {
-    let calendar = Calendar.current
-    let now = Date()
-    let startDate = calendar.date(byAdding: .year, value: -200, to: now) ?? Date.distantPast
-    let todayStart = calendar.startOfDay(for: now)
-    let endDate =
-      calendar.date(bySettingHour: 23, minute: 59, second: 59, of: todayStart) ?? todayStart
-    return startDate...endDate
-  }
-
-  private var datingStartDayBinding: Binding<Date> {
-    Binding(
-      get: {
-        let raw = datingStartDay ?? Date()
-        let bounds = dateRange
-        return min(max(raw, bounds.lowerBound), bounds.upperBound)
-      },
-      set: {
-        datingStartDay = $0
-        isShowingStartDayModal = false
-      }
-    )
-  }
+  @AppStorage(DatingStartDayStore.appStorageKey) private var datingStartDaySince1970: Double =
+    DatingStartDayStore.appStorageDefaultInterval
 
   private var anniversaryAnchorDay: Date {
-    datingStartDay ?? Date()
+    DatingStartDayStore.datingStartDate(storedInterval: datingStartDaySince1970)
   }
 
   /// Next calendar occurrence of anchor month/day (local TZ), inclusive of today.
@@ -90,29 +65,10 @@ struct HomeView: View {
   }
 
   var body: some View {
-    ZStack {
-      Color("Backdrop").ignoresSafeArea()
-      VStack(spacing: 16) {
-        AnniversaryCard(anniversaryDate: anniversaryDate, numberOfDays: daysUntilAnniversary)
-        Button("Set Dating Start Day") {
-          isShowingStartDayModal = true
-        }
-      }
-      .padding(.horizontal, 16)
-      .padding(.vertical)
-      .sheet(isPresented: $isShowingStartDayModal) {
-        NavigationStack {
-          DatePicker(
-            "Dating Start Day",
-            selection: datingStartDayBinding,
-            in: dateRange,
-            displayedComponents: [.date]
-          )
-          .datePickerStyle(.graphical)
-          .padding()
-          .navigationTitle("Dating Start Day")
-        }
-      }
-    }
+		VStack(spacing: 16) {
+			AnniversaryCard(anniversaryDate: anniversaryDate, numberOfDays: daysUntilAnniversary)
+		}
+		.padding(.horizontal, 16)
+		.padding(.vertical)
   }
 }

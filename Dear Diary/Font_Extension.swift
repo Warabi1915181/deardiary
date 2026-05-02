@@ -9,10 +9,14 @@ import SwiftUI
 
 extension Font {
   static let regular = Font.custom("PlayfairDisplay-Regular", size: 16)
+  static let regularItalic = Font.custom("PlayfairDisplay-RegularItalic", size: 16)
   static let bold = Font.custom("PlayfairDisplay-Bold", size: 16)
   static let fancy = Font.custom("DancingScript-Regular", size: 16)
 	static func regular(size: CGFloat = 16) -> Font {
 		return Font.custom("PlayfairDisplay-Regular", size: size)
+	}
+	static func regularItalic(size: CGFloat = 16) -> Font {
+		return Font.custom("PlayfairDisplay-RegularItalic", size: size)
 	}
 	static func bold(size: CGFloat = 16) -> Font {
 		return Font.custom("PlayfairDisplay-Bold", size: size)

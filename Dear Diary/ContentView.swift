@@ -7,11 +7,37 @@
 
 import SwiftUI
 
+struct ViewWithBackdrop<Content: View>: View {
+  @ViewBuilder var content: Content
+
+  var body: some View {
+    ZStack {
+      Color(.backdrop).ignoresSafeArea()
+      content
+    }
+  }
+}
+
 struct ContentView: View {
   var body: some View {
     TabView {
       Tab("Home", systemImage: "house") {
-        HomeView()
+        ViewWithBackdrop {
+          HomeView()
+        }
+      }
+      Tab("ToDo", systemImage: "list.bullet") {
+        ViewWithBackdrop {
+          ToDoView()
+        }
+      }
+      Tab("Settings", systemImage: "gear") {
+        NavigationStack {
+          ViewWithBackdrop {
+            SettingsMenuView()
+          }
+
+        }
       }
     }
 

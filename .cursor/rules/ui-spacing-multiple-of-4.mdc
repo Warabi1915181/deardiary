@@ -1,0 +1,34 @@
+---
+description: Enforce 4pt grid for UI styling with 1px exception
+alwaysApply: true
+---
+
+# UI Spacing: Multiples of 4
+
+Use values that are multiples of 4 for UI styling measurements by default.
+
+Apply this to spacing and sizing values, including:
+- padding and margin
+- gaps and offsets
+- width and height
+- corner radius
+- icon and touch target sizes
+
+Allowed exception:
+- use single-pixel values when a true 1px component is needed (for example: borders, dividers, hairlines, or 1px separators)
+
+Examples:
+
+```swift
+// ✅ Good
+.padding(16)
+.cornerRadius(12)
+.frame(width: 48, height: 48)
+
+// ✅ Allowed 1px exception
+.overlay(Rectangle().frame(height: 1))
+
+// ❌ Avoid
+.padding(10)
+.cornerRadius(7)
+```
