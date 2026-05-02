@@ -26,9 +26,11 @@ struct ContentView: View {
           HomeView()
         }
       }
-      Tab("ToDo", systemImage: "list.bullet") {
-        ViewWithBackdrop {
-          ToDoView()
+      Tab("Our List", systemImage: "list.bullet") {
+        NavigationStack {
+          ViewWithBackdrop {
+            ToDoView()
+          }
         }
       }
       Tab("Settings", systemImage: "gear") {

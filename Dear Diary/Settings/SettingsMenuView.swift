@@ -19,14 +19,6 @@ struct SettingsMenuView: View {
             Text("Dating Start Day")
               .frame(maxWidth: .infinity, alignment: .leading)
           }
-          NavigationLink(destination: DatingSettingsView()) {
-            Text("Item2")
-              .frame(maxWidth: .infinity, alignment: .leading)
-          }
-          NavigationLink(destination: DatingSettingsView()) {
-            Text("Item3")
-              .frame(maxWidth: .infinity, alignment: .leading)
-          }
         }
 
       }
