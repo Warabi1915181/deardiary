@@ -21,6 +21,13 @@ struct SettingsMenuView: View {
           }
         }
 
+        Section(header: Text("Sync")) {
+          NavigationLink(destination: SyncSettingsView()) {
+            Text("Sync with Partner")
+              .frame(maxWidth: .infinity, alignment: .leading)
+          }
+        }
+
       }
       .listStyle(.insetGrouped)
       .scrollContentBackground(.hidden)
