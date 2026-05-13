@@ -1,0 +1,504 @@
+import PhotosUI
+import SwiftUI
+import UIKit
+import UniformTypeIdentifiers
+
+struct DiaryView: View {
+  @ObservedObject var store: DiaryStore
+  @State private var searchText = ""
+  @State private var favoriteOnly = false
+  @State private var showingEditor = false
+  @FocusState private var isSearchFocused: Bool
+
+  init(store: DiaryStore = DiaryStore()) {
+    self.store = store
+  }
+
+  var body: some View {
+    ScrollView {
+      VStack(alignment: .leading, spacing: 16) {
+        Text("Diary")
+          .font(.regularItalic(size: 48))
+          .foregroundStyle(Color("PrimaryForeground"))
+
+        searchControls
+
+        let entries = store.entries(matching: searchText, favoriteOnly: favoriteOnly)
+        if entries.isEmpty {
+          emptyState
+        } else {
+          VStack(spacing: 12) {
+            ForEach(entries) { entry in
+              NavigationLink {
+                DiaryEntryDetailView(store: store, entryID: entry.id)
+              } label: {
+                DiaryEntryCard(entry: entry, store: store)
+              }
+              .buttonStyle(.plain)
+            }
+          }
+        }
+      }
+      .padding(.horizontal, 16)
+      .padding(.vertical, 16)
+    }
+    .scrollDismissesKeyboard(.interactively)
+    .simultaneousGesture(
+      TapGesture().onEnded {
+        isSearchFocused = false
+      }
+    )
+    .toolbar {
+      ToolbarItem(placement: .topBarTrailing) {
+        Button {
+          showingEditor = true
+        } label: {
+          Image(systemName: "plus.circle.fill")
+            .font(.system(size: 24))
+            .foregroundStyle(Color("PrimaryForeground"))
+        }
+      }
+    }
+    .sheet(isPresented: $showingEditor) {
+      DiaryEntryEditorView(store: store)
+    }
+  }
+
+  private var searchControls: some View {
+    VStack(spacing: 12) {
+      HStack(spacing: 8) {
+        Image(systemName: "magnifyingglass")
+          .foregroundStyle(Color("SecondaryForeground"))
+        TextField("Search memories, tags, or moods", text: $searchText)
+          .textInputAutocapitalization(.never)
+          .autocorrectionDisabled()
+          .focused($isSearchFocused)
+      }
+      .padding(12)
+      .background(
+        RoundedRectangle(cornerRadius: 16)
+          .fill(Color("PrimaryBackground"))
+      )
+
+      Toggle("Favorites only", isOn: $favoriteOnly)
+        .font(.regular(size: 16))
+        .toggleStyle(.switch)
+    }
+  }
+
+  private var emptyState: some View {
+    VStack(spacing: 12) {
+      Image(systemName: "book.closed")
+        .font(.system(size: 36))
+        .foregroundStyle(Color("SecondaryForeground"))
+      Text("No memories yet.")
+        .font(.regular(size: 18))
+        .foregroundStyle(Color("SecondaryForeground"))
+      Text("Start with today.")
+        .font(.regular(size: 16))
+        .foregroundStyle(Color("SecondaryForeground"))
+      Button("Write a Memory") {
+        showingEditor = true
+      }
+      .buttonStyle(.borderedProminent)
+    }
+    .frame(maxWidth: .infinity)
+    .padding(24)
+    .background(
+      RoundedRectangle(cornerRadius: 16)
+        .fill(Color("PrimaryBackground"))
+    )
+  }
+}
+
+private struct DiaryEntryCard: View {
+  let entry: DiaryEntry
+  let store: DiaryStore
+
+  var body: some View {
+    Card(verticalPadding: 16) {
+      VStack(alignment: .leading, spacing: 12) {
+        HStack(alignment: .top) {
+          VStack(alignment: .leading, spacing: 4) {
+            Text(entry.entryDate.formatted(date: .abbreviated, time: .omitted))
+              .font(.regular(size: 14))
+              .foregroundStyle(Color("SecondaryForeground"))
+            Text(entry.title)
+              .font(.bold(size: 22))
+              .foregroundStyle(Color("PrimaryForeground"))
+          }
+          Spacer()
+          if entry.isFavorite {
+            Image(systemName: "heart.fill")
+              .foregroundStyle(Color("PrimaryForeground"))
+          }
+        }
+
+        if !entry.body.isEmpty {
+          Text(entry.body)
+            .font(.regular(size: 16))
+            .foregroundStyle(Color("PrimaryForeground"))
+            .lineLimit(3)
+        }
+
+        if let firstPhoto = entry.photos.first {
+          DiaryPhotoThumbnail(url: store.photoURL(for: firstPhoto), height: 160)
+            .overlay(alignment: .bottomTrailing) {
+              if entry.photos.count > 1 {
+                Text("+\(entry.photos.count - 1)")
+                  .font(.regular(size: 14))
+                  .padding(.horizontal, 8)
+                  .padding(.vertical, 4)
+                  .background(.thinMaterial, in: Capsule())
+                  .padding(8)
+              }
+            }
+        }
+
+        DiaryEntryMetadataRow(entry: entry)
+      }
+    }
+  }
+}
+
+private struct DiaryEntryDetailView: View {
+  @ObservedObject var store: DiaryStore
+  let entryID: UUID
+  @Environment(\.dismiss) private var dismiss
+  @State private var showingEditor = false
+  @State private var showingDeleteConfirmation = false
+
+  private var entry: DiaryEntry? {
+    store.entries.first(where: { $0.id == entryID })
+  }
+
+  var body: some View {
+    ScrollView {
+      if let entry {
+        VStack(alignment: .leading, spacing: 16) {
+          Text(entry.entryDate.formatted(date: .abbreviated, time: .omitted))
+            .font(.regular(size: 16))
+            .foregroundStyle(Color("SecondaryForeground"))
+
+          Text(entry.title)
+            .font(.regularItalic(size: 40))
+            .foregroundStyle(Color("PrimaryForeground"))
+
+          DiaryEntryMetadataRow(entry: entry)
+
+          if !entry.photos.isEmpty {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+              ForEach(entry.photos) { photo in
+                DiaryPhotoThumbnail(url: store.photoURL(for: photo), height: 160)
+              }
+            }
+          }
+
+          Text(entry.body)
+            .font(.regular(size: 18))
+            .foregroundStyle(Color("PrimaryForeground"))
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(16)
+      } else {
+        Text("This memory is no longer available.")
+          .font(.regular(size: 16))
+          .foregroundStyle(Color("SecondaryForeground"))
+          .padding(16)
+      }
+    }
+    .navigationTitle("Memory")
+    .navigationBarTitleDisplayMode(.inline)
+    .toolbar {
+      if let entry {
+        ToolbarItemGroup(placement: .topBarTrailing) {
+          Button {
+            _ = store.setFavorite(entry.id, isFavorite: !entry.isFavorite)
+          } label: {
+            Image(systemName: entry.isFavorite ? "heart.fill" : "heart")
+          }
+
+          Button("Edit") {
+            showingEditor = true
+          }
+
+          Button(role: .destructive) {
+            showingDeleteConfirmation = true
+          } label: {
+            Image(systemName: "trash")
+          }
+        }
+      }
+    }
+    .sheet(isPresented: $showingEditor) {
+      if let entry {
+        DiaryEntryEditorView(store: store, entry: entry)
+      }
+    }
+    .confirmationDialog("Delete this memory?", isPresented: $showingDeleteConfirmation) {
+      Button("Delete Memory", role: .destructive) {
+        if store.softDeleteEntry(id: entryID) {
+          dismiss()
+        }
+      }
+    }
+  }
+}
+
+private struct DiaryEntryEditorView: View {
+  @ObservedObject var store: DiaryStore
+  @Environment(\.dismiss) private var dismiss
+  @State private var title: String
+  @State private var bodyText: String
+  @State private var entryDate: Date
+  @State private var mood: DiaryMood?
+  @State private var tagsText: String
+  @State private var keptPhotos: [DiaryPhoto]
+  @State private var selectedPhotoItems: [PhotosPickerItem] = []
+  @State private var errorMessage: String?
+  @State private var isSaving = false
+  @FocusState private var focusedField: Field?
+
+  private let entry: DiaryEntry?
+
+  private enum Field: Hashable {
+    case title
+    case body
+    case tags
+  }
+
+  init(store: DiaryStore, entry: DiaryEntry? = nil) {
+    self.store = store
+    self.entry = entry
+    _title = State(initialValue: entry?.title ?? "")
+    _bodyText = State(initialValue: entry?.body ?? "")
+    _entryDate = State(initialValue: entry?.entryDate ?? Date())
+    _mood = State(initialValue: entry?.mood)
+    _tagsText = State(initialValue: entry?.tags.joined(separator: ", ") ?? "")
+    _keptPhotos = State(initialValue: entry?.photos ?? [])
+  }
+
+  var body: some View {
+    NavigationStack {
+      Form {
+        Section("Memory") {
+          TextField("Title", text: $title)
+            .focused($focusedField, equals: .title)
+          DatePicker("Date", selection: $entryDate, displayedComponents: [.date])
+          Picker("Mood", selection: $mood) {
+            Text("None").tag(DiaryMood?.none)
+            ForEach(DiaryMood.allCases) { mood in
+              Text(mood.label).tag(Optional(mood))
+            }
+          }
+          TextEditor(text: $bodyText)
+            .frame(minHeight: 160)
+            .focused($focusedField, equals: .body)
+        }
+
+        Section("Tags") {
+          TextField("cozy, trip, dinner", text: $tagsText)
+            .textInputAutocapitalization(.never)
+            .focused($focusedField, equals: .tags)
+          if !store.allTags.isEmpty {
+            ScrollView(.horizontal, showsIndicators: false) {
+              HStack(spacing: 8) {
+                ForEach(store.allTags, id: \.self) { tag in
+                  Button(tag) {
+                    appendTag(tag)
+                  }
+                  .buttonStyle(.bordered)
+                }
+              }
+            }
+          }
+        }
+
+        Section("Photos") {
+          if !keptPhotos.isEmpty {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+              ForEach(keptPhotos) { photo in
+                ZStack(alignment: .topTrailing) {
+                  DiaryPhotoThumbnail(url: store.photoURL(for: photo), height: 140)
+                  Button {
+                    keptPhotos.removeAll { $0.id == photo.id }
+                  } label: {
+                    Image(systemName: "xmark.circle.fill")
+                      .font(.system(size: 24))
+                      .foregroundStyle(Color("PrimaryForeground"))
+                      .background(Color("PrimaryBackground"), in: Circle())
+                  }
+                  .padding(8)
+                }
+              }
+            }
+          }
+
+          PhotosPicker(
+            selection: $selectedPhotoItems,
+            matching: .images,
+            photoLibrary: .shared()
+          ) {
+            Label("Add Photos", systemImage: "photo")
+          }
+
+          if !selectedPhotoItems.isEmpty {
+            Text("\(selectedPhotoItems.count) new photo\(selectedPhotoItems.count == 1 ? "" : "s") selected")
+              .font(.regular(size: 14))
+              .foregroundStyle(Color("SecondaryForeground"))
+          }
+        }
+
+        if let errorMessage {
+          Section {
+            Text(errorMessage)
+              .font(.regular(size: 14))
+              .foregroundStyle(.red)
+          }
+        }
+      }
+      .scrollDismissesKeyboard(.interactively)
+      .simultaneousGesture(
+        TapGesture().onEnded {
+          focusedField = nil
+        }
+      )
+      .navigationTitle(entry == nil ? "New Memory" : "Edit Memory")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button("Cancel") {
+            dismiss()
+          }
+        }
+        ToolbarItem(placement: .confirmationAction) {
+          Button(isSaving ? "Saving..." : "Save") {
+            save()
+          }
+          .disabled(isSaving)
+        }
+        ToolbarItemGroup(placement: .keyboard) {
+          Spacer()
+          Button("Done") {
+            focusedField = nil
+          }
+        }
+      }
+    }
+  }
+
+  private func appendTag(_ tag: String) {
+    var tags = parsedTags
+    guard !tags.contains(where: { $0.caseInsensitiveCompare(tag) == .orderedSame }) else { return }
+    tags.append(tag)
+    tagsText = tags.joined(separator: ", ")
+  }
+
+  private var parsedTags: [String] {
+    tagsText
+      .split(separator: ",")
+      .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
+      .filter { !$0.isEmpty }
+  }
+
+  private func save() {
+    isSaving = true
+    errorMessage = nil
+
+    Task {
+      do {
+        let payloads = try await selectedPhotoItems.diaryPhotoPayloads()
+        if let entry {
+          _ = try store.updateEntry(
+            id: entry.id,
+            title: title,
+            body: bodyText,
+            entryDate: entryDate,
+            mood: mood,
+            tags: parsedTags,
+            photosToKeep: keptPhotos,
+            newPhotoPayloads: payloads
+          )
+        } else {
+          _ = try store.addEntry(
+            title: title,
+            body: bodyText,
+            entryDate: entryDate,
+            mood: mood,
+            tags: parsedTags,
+            photoPayloads: payloads
+          )
+        }
+        dismiss()
+      } catch {
+        errorMessage = error.localizedDescription
+      }
+      isSaving = false
+    }
+  }
+}
+
+private struct DiaryEntryMetadataRow: View {
+  let entry: DiaryEntry
+
+  var body: some View {
+    HStack(spacing: 8) {
+      if let mood = entry.mood {
+        Text(mood.label)
+          .font(.regular(size: 14))
+          .padding(.horizontal, 8)
+          .padding(.vertical, 4)
+          .background(Color("SageBackground"), in: Capsule())
+          .foregroundStyle(Color("SageForeground"))
+      }
+
+      ForEach(entry.tags, id: \.self) { tag in
+        Text("#\(tag)")
+          .font(.regular(size: 14))
+          .foregroundStyle(Color("SecondaryForeground"))
+      }
+    }
+  }
+}
+
+private struct DiaryPhotoThumbnail: View {
+  let url: URL
+  let height: CGFloat
+
+  var body: some View {
+    Group {
+      if let image = UIImage(contentsOfFile: url.path) {
+        Image(uiImage: image)
+          .resizable()
+          .scaledToFill()
+      } else {
+        ZStack {
+          Color("Muted")
+          Image(systemName: "photo")
+            .foregroundStyle(Color("SecondaryForeground"))
+        }
+      }
+    }
+    .frame(maxWidth: .infinity)
+    .frame(height: height)
+    .clipShape(RoundedRectangle(cornerRadius: 16))
+  }
+}
+
+private extension Array where Element == PhotosPickerItem {
+  func diaryPhotoPayloads() async throws -> [DiaryPhotoPayload] {
+    var payloads: [DiaryPhotoPayload] = []
+    for item in self {
+      guard let data = try await item.loadTransferable(type: Data.self) else { continue }
+      let fileExtension = item.supportedContentTypes.first?.preferredFilenameExtension ?? "jpg"
+      payloads.append(DiaryPhotoPayload(data: data, fileExtension: fileExtension))
+    }
+    return payloads
+  }
+}
+
+#Preview {
+  NavigationStack {
+    DiaryView()
+  }
+}

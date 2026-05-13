@@ -19,11 +19,20 @@ struct ViewWithBackdrop<Content: View>: View {
 }
 
 struct ContentView: View {
+  @StateObject private var diaryStore = DiaryStore()
+
   var body: some View {
     TabView {
       Tab("Home", systemImage: "house") {
         ViewWithBackdrop {
-          HomeView()
+          HomeView(diaryStore: diaryStore)
+        }
+      }
+      Tab("Diary", systemImage: "book.closed") {
+        NavigationStack {
+          ViewWithBackdrop {
+            DiaryView(store: diaryStore)
+          }
         }
       }
       Tab("Our List", systemImage: "list.bullet") {

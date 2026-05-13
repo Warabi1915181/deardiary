@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct AnniversaryCard: View {
   var anniversaryDate: Date
@@ -32,9 +33,57 @@ struct AnniversaryCard: View {
   }
 }
 
+struct LatestMemoryCard: View {
+  let entry: DiaryEntry
+  let photoURL: URL?
+
+  var body: some View {
+    Card(verticalPadding: 16) {
+      VStack(alignment: .leading, spacing: 12) {
+        HStack(spacing: 4) {
+          Image(systemName: "book.closed")
+            .foregroundStyle(Color("PrimaryForeground"))
+          Text("Latest Memory")
+            .fontWeight(.semibold)
+        }
+
+        Text(entry.title)
+          .font(.bold(size: 22))
+          .foregroundStyle(Color("PrimaryForeground"))
+
+        if !entry.body.isEmpty {
+          Text(entry.body)
+            .font(.regular(size: 16))
+            .foregroundStyle(Color("PrimaryForeground"))
+            .lineLimit(3)
+        }
+
+        if let photoURL, let image = UIImage(contentsOfFile: photoURL.path) {
+          Image(uiImage: image)
+            .resizable()
+            .scaledToFill()
+            .frame(maxWidth: .infinity)
+            .frame(height: 160)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+        }
+
+        Text(entry.entryDate.formatted(date: .abbreviated, time: .omitted))
+          .font(.regular(size: 14))
+          .foregroundStyle(Color("SecondaryForeground"))
+      }
+      .frame(maxWidth: .infinity, alignment: .leading)
+    }
+  }
+}
+
 struct HomeView: View {
   @AppStorage(DatingStartDayStore.appStorageKey) private var datingStartDaySince1970: Double =
     DatingStartDayStore.appStorageDefaultInterval
+  @ObservedObject var diaryStore: DiaryStore
+
+  init(diaryStore: DiaryStore = DiaryStore()) {
+    self.diaryStore = diaryStore
+  }
 
   private var anniversaryAnchorDay: Date {
     DatingStartDayStore.datingStartDate(storedInterval: datingStartDaySince1970)
@@ -67,6 +116,12 @@ struct HomeView: View {
   var body: some View {
 		VStack(spacing: 16) {
 			AnniversaryCard(anniversaryDate: anniversaryDate, numberOfDays: daysUntilAnniversary)
+      if let latestEntry = diaryStore.latestEntry {
+        LatestMemoryCard(
+          entry: latestEntry,
+          photoURL: latestEntry.photos.first.map { diaryStore.photoURL(for: $0) }
+        )
+      }
 		}
 		.padding(.horizontal, 16)
 		.padding(.vertical)
