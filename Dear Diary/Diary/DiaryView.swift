@@ -358,11 +358,6 @@ private struct DiaryEntryEditorView: View {
         }
       }
       .scrollDismissesKeyboard(.interactively)
-      .simultaneousGesture(
-        TapGesture().onEnded {
-          focusedField = nil
-        }
-      )
       .navigationTitle(entry == nil ? "New Memory" : "Edit Memory")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
