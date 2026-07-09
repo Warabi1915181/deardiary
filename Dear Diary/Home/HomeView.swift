@@ -77,16 +77,10 @@ struct LatestMemoryCard: View {
 }
 
 struct HomeView: View {
-  @AppStorage(DatingStartDayStore.appStorageKey) private var datingStartDaySince1970: Double =
-    DatingStartDayStore.appStorageDefaultInterval
-  @ObservedObject var diaryStore: DiaryStore
-
-  init(diaryStore: DiaryStore = DiaryStore()) {
-    self.diaryStore = diaryStore
-  }
+  @EnvironmentObject private var environment: AppEnvironment
 
   private var anniversaryAnchorDay: Date {
-    DatingStartDayStore.datingStartDate(storedInterval: datingStartDaySince1970)
+    environment.coupleSpaceStore.datingStartDay
   }
 
   /// Next calendar occurrence of anchor month/day (local TZ), inclusive of today.
@@ -114,16 +108,16 @@ struct HomeView: View {
   }
 
   var body: some View {
-		VStack(spacing: 16) {
-			AnniversaryCard(anniversaryDate: anniversaryDate, numberOfDays: daysUntilAnniversary)
-      if let latestEntry = diaryStore.latestEntry {
+    VStack(spacing: 16) {
+      AnniversaryCard(anniversaryDate: anniversaryDate, numberOfDays: daysUntilAnniversary)
+      if let latestEntry = environment.diaryStore.latestEntry {
         LatestMemoryCard(
           entry: latestEntry,
-          photoURL: latestEntry.photos.first.map { diaryStore.photoURL(for: $0) }
+          photoURL: latestEntry.photos.first.map { environment.diaryStore.photoURL(for: $0) }
         )
       }
-		}
-		.padding(.horizontal, 16)
-		.padding(.vertical)
+    }
+    .padding(.horizontal, 16)
+    .padding(.vertical)
   }
 }

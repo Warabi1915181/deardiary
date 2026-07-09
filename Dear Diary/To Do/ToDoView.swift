@@ -476,31 +476,62 @@ private struct ToDoCategoryDropDelegate: DropDelegate {
 }
 
 #Preview {
+  let now = Date()
   let previewState = ToDoPersistedState(
     categories: [
-      ToDoCategory(id: ToDoStore.uncategorizedCategoryID, name: "Uncategorized", order: 0),
-      ToDoCategory(id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!, name: "Dates", order: 1),
+      ToDoCategory(
+        id: ToDoStore.uncategorizedCategoryID,
+        coupleSpaceID: nil,
+        name: "Uncategorized",
+        order: 0,
+        createdAt: now,
+        updatedAt: now,
+        deletedAt: nil,
+        modifiedByDeviceID: "preview",
+        version: 1
+      ),
+      ToDoCategory(
+        id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
+        coupleSpaceID: nil,
+        name: "Dates",
+        order: 1,
+        createdAt: now,
+        updatedAt: now,
+        deletedAt: nil,
+        modifiedByDeviceID: "preview",
+        version: 1
+      ),
     ],
     items: [
       ToDoItem(
         id: UUID(),
+        coupleSpaceID: nil,
         title: "Plan weekend picnic",
         details: "Bring camera and blanket",
         categoryID: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
         status: .active,
         order: 0,
-        createdAt: Date(),
-        completedAt: nil
+        createdAt: now,
+        completedAt: nil,
+        updatedAt: now,
+        deletedAt: nil,
+        modifiedByDeviceID: "preview",
+        version: 1
       ),
       ToDoItem(
         id: UUID(),
+        coupleSpaceID: nil,
         title: "Watch sunset at harbor",
         details: "",
         categoryID: ToDoStore.uncategorizedCategoryID,
         status: .completed,
         order: 0,
-        createdAt: Date(),
-        completedAt: Date()
+        createdAt: now,
+        completedAt: now,
+        updatedAt: now,
+        deletedAt: nil,
+        modifiedByDeviceID: "preview",
+        version: 1
       ),
     ]
   )

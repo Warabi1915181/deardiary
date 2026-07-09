@@ -1,16 +1,17 @@
 import SwiftUI
 
 struct DatingSettingsView: View {
-  @AppStorage(DatingStartDayStore.appStorageKey) private var datingStartDaySince1970: Double =
-    DatingStartDayStore.appStorageDefaultInterval
+  @EnvironmentObject private var environment: AppEnvironment
   @State private var isShowingStartDayModal = false
 
   private var datingStartDayBinding: Binding<Date> {
-    DatingStartDayStore.dateBinding(
-      storedInterval: $datingStartDaySince1970,
-      onChange: { date in
+    Binding(
+      get: { environment.coupleSpaceStore.datingStartDay },
+      set: { newValue in
+        _ = environment.coupleSpaceStore.setDatingStartDay(newValue)
         isShowingStartDayModal = false
-      })
+      }
+    )
   }
 
   private var dateRange: ClosedRange<Date> {
@@ -18,8 +19,7 @@ struct DatingSettingsView: View {
   }
 
   private var datingStartDayString: String {
-    let date = datingStartDayBinding.wrappedValue
-    return date.formatted(date: .abbreviated, time: .omitted)
+    datingStartDayBinding.wrappedValue.formatted(date: .abbreviated, time: .omitted)
   }
 
   var body: some View {
@@ -43,5 +43,12 @@ struct DatingSettingsView: View {
     }
     .navigationTitle("Dating Start Day")
     .navigationBarTitleDisplayMode(.inline)
+  }
+}
+
+#Preview {
+  NavigationStack {
+    DatingSettingsView()
+      .environmentObject(AppEnvironment())
   }
 }

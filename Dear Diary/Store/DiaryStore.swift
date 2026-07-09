@@ -33,7 +33,7 @@ struct DiaryPhoto: Identifiable, Codable, Hashable {
   var createdAt: Date
 }
 
-struct DiaryEntry: Identifiable, Codable, Hashable {
+struct DiaryEntry: Identifiable, Codable, Hashable, SyncStamped {
   var id: UUID
   var coupleSpaceID: UUID?
   var title: String
@@ -73,10 +73,12 @@ final class DiaryStore: ObservableObject {
   private let encoder = JSONEncoder()
   private let decoder = JSONDecoder()
 
+  var onRecordsChanged: ((Set<SyncRecordReference>) -> Void)?
+
   init(
     storeURL: URL? = nil,
     photosDirectoryURL: URL? = nil,
-    deviceID: String = DiaryDeviceIdentifier.current(),
+    deviceID: String = AppDeviceIdentifier.current(),
     fileManager: FileManager = .default
   ) {
     self.fileManager = fileManager
@@ -160,6 +162,7 @@ final class DiaryStore: ObservableObject {
       version: Self.schemaVersion
     )
     state.entries.append(entry)
+    notifyChanges(for: entry)
     return entry.id
   }
 
@@ -197,6 +200,7 @@ final class DiaryStore: ObservableObject {
     state.entries[index].updatedAt = Date()
     state.entries[index].modifiedByDeviceID = deviceID
     state.entries[index].version = Self.schemaVersion
+    notifyChanges(for: state.entries[index])
     return true
   }
 
@@ -207,6 +211,7 @@ final class DiaryStore: ObservableObject {
     state.entries[index].isFavorite = isFavorite
     state.entries[index].updatedAt = Date()
     state.entries[index].modifiedByDeviceID = deviceID
+    notifyChanges(for: state.entries[index])
     return true
   }
 
@@ -218,7 +223,84 @@ final class DiaryStore: ObservableObject {
     state.entries[index].deletedAt = now
     state.entries[index].updatedAt = now
     state.entries[index].modifiedByDeviceID = deviceID
+    notifyChanges(for: state.entries[index])
     return true
+  }
+
+  func entryRecord(id: UUID) -> DiaryEntry? {
+    state.entries.first(where: { $0.id == id })
+  }
+
+  func assignCoupleSpaceID(_ coupleSpaceID: UUID) -> Set<SyncRecordReference> {
+    var references: Set<SyncRecordReference> = []
+
+    for index in state.entries.indices where state.entries[index].deletedAt == nil {
+      guard state.entries[index].coupleSpaceID != coupleSpaceID else { continue }
+      state.entries[index].coupleSpaceID = coupleSpaceID
+      state.entries[index].updatedAt = Date()
+      state.entries[index].modifiedByDeviceID = deviceID
+      references.formUnion(notifyChanges(for: state.entries[index]))
+    }
+
+    return references
+  }
+
+  func applyRemoteEntry(_ remote: DiaryEntry) -> Bool {
+    if remote.deletedAt != nil {
+      if let index = state.entries.firstIndex(where: { $0.id == remote.id }) {
+        let existingPhotos = state.entries[index].photos
+        for photo in existingPhotos where !remote.photos.contains(where: { $0.id == photo.id }) {
+          removePhotoFile(photo)
+        }
+        state.entries[index] = remote
+      }
+      return true
+    }
+
+    if let index = state.entries.firstIndex(where: { $0.id == remote.id }) {
+      let local = state.entries[index]
+      guard
+        SyncMergeResolver.shouldApplyRemote(
+          local: local,
+          remote: remote,
+          localUpdatedAt: local.updatedAt,
+          remoteUpdatedAt: remote.updatedAt
+        )
+      else {
+        return false
+      }
+
+      let removedPhotos = local.photos.filter { photo in
+        !remote.photos.contains(where: { $0.id == photo.id })
+      }
+      for photo in removedPhotos {
+        removePhotoFile(photo)
+      }
+      state.entries[index] = remote
+      return true
+    }
+
+    state.entries.append(remote)
+    return true
+  }
+
+  func saveDownloadedPhoto(data: Data, photo: DiaryPhoto, fileExtension: String) throws {
+    try fileManager.createDirectory(at: photosDirectoryURL, withIntermediateDirectories: true)
+    let safeExtension = sanitizeFileExtension(fileExtension)
+    let filename = photo.filename.isEmpty ? "\(photo.id.uuidString).\(safeExtension)" : photo.filename
+    let url = photosDirectoryURL.appendingPathComponent(filename)
+    try data.write(to: url, options: [.atomic])
+  }
+
+  func allSyncRecords(coupleSpaceID: UUID) -> Set<SyncRecordReference> {
+    var references: Set<SyncRecordReference> = []
+    for entry in state.entries where entry.coupleSpaceID == coupleSpaceID {
+      references.insert(SyncRecordReference(kind: .diaryEntry, id: entry.id))
+      for photo in entry.photos {
+        references.insert(SyncRecordReference(kind: .diaryPhoto, id: photo.id))
+      }
+    }
+    return references
   }
 
   private func savePhotoPayloads(_ payloads: [DiaryPhotoPayload]) throws -> [DiaryPhoto] {
@@ -250,6 +332,18 @@ final class DiaryStore: ObservableObject {
 
   private func removePhotoFile(_ photo: DiaryPhoto) {
     try? fileManager.removeItem(at: photoURL(for: photo))
+  }
+
+  @discardableResult
+  private func notifyChanges(for entry: DiaryEntry) -> Set<SyncRecordReference> {
+    var references: Set<SyncRecordReference> = [
+      SyncRecordReference(kind: .diaryEntry, id: entry.id)
+    ]
+    for photo in entry.photos {
+      references.insert(SyncRecordReference(kind: .diaryPhoto, id: photo.id))
+    }
+    onRecordsChanged?(references)
+    return references
   }
 
   private func normalizeTitle(_ title: String, body: String) -> String {
@@ -332,16 +426,3 @@ private extension DiaryEntry {
   }
 }
 
-private enum DiaryDeviceIdentifier {
-  private static let key = "diary.deviceID"
-
-  static func current(userDefaults: UserDefaults = .standard) -> String {
-    if let existing = userDefaults.string(forKey: key) {
-      return existing
-    }
-
-    let generated = UUID().uuidString
-    userDefaults.set(generated, forKey: key)
-    return generated
-  }
-}
