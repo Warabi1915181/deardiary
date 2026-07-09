@@ -1,5 +1,4 @@
 import CloudKit
-import Combine
 import Foundation
 
 enum PartnerSyncStatus: Equatable {
@@ -77,7 +76,8 @@ extension CKRecord {
 }
 
 @MainActor
-final class AppEnvironment: ObservableObject {
+@Observable
+final class AppEnvironment {
   let coupleSpaceStore: CoupleSpaceStore
   let diaryStore: DiaryStore
   let toDoStore: ToDoStore
@@ -113,28 +113,29 @@ final class AppEnvironment: ObservableObject {
 }
 
 @MainActor
-final class CloudKitSyncCoordinator: ObservableObject {
+@Observable
+final class CloudKitSyncCoordinator {
   static let containerIdentifier = CloudKitSyncService.containerIdentifier
 
-  @Published private(set) var accountAvailability: CloudKitAccountAvailability = .unknown
-  @Published private(set) var partnerSyncStatus: PartnerSyncStatus = .notSynced
-  @Published private(set) var isRefreshingAccountStatus = false
-  @Published private(set) var pendingShare: CKShare?
-  @Published private(set) var pendingShareContainer: CKContainer?
-  @Published var showPartnerMergePrompt = false
+  private(set) var accountAvailability: CloudKitAccountAvailability = .unknown
+  private(set) var partnerSyncStatus: PartnerSyncStatus = .notSynced
+  private(set) var isRefreshingAccountStatus = false
+  private(set) var pendingShare: CKShare?
+  private(set) var pendingShareContainer: CKContainer?
+  var showPartnerMergePrompt = false
 
-  private let coupleSpaceStore: CoupleSpaceStore
-  private let diaryStore: DiaryStore
-  private let toDoStore: ToDoStore
-  private let container: CKContainer
-  private let syncStateURL: URL
-  private let fileManager: FileManager
+  @ObservationIgnored private let coupleSpaceStore: CoupleSpaceStore
+  @ObservationIgnored private let diaryStore: DiaryStore
+  @ObservationIgnored private let toDoStore: ToDoStore
+  @ObservationIgnored private let container: CKContainer
+  @ObservationIgnored private let syncStateURL: URL
+  @ObservationIgnored private let fileManager: FileManager
 
-  private var syncState = CloudKitSyncPersistedState()
-  private var privateSyncEngine: CKSyncEngine?
-  private var sharedSyncEngine: CKSyncEngine?
-  private var rootRecordCache: CKRecord?
-  private var lastKnownRecords: [CKRecord.ID: CKRecord] = [:]
+  @ObservationIgnored private var syncState = CloudKitSyncPersistedState()
+  @ObservationIgnored private var privateSyncEngine: CKSyncEngine?
+  @ObservationIgnored private var sharedSyncEngine: CKSyncEngine?
+  @ObservationIgnored private var rootRecordCache: CKRecord?
+  @ObservationIgnored private var lastKnownRecords: [CKRecord.ID: CKRecord] = [:]
 
   init(
     coupleSpaceStore: CoupleSpaceStore,

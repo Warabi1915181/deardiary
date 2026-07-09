@@ -2,7 +2,7 @@ import CloudKit
 import SwiftUI
 
 struct SyncSettingsView: View {
-  @EnvironmentObject private var environment: AppEnvironment
+  @Environment(AppEnvironment.self) private var environment
   @State private var isShowingShareSheet = false
   @State private var isShowingLeaveConfirmation = false
   @State private var actionErrorMessage: String?
@@ -156,6 +156,6 @@ struct SyncSettingsView: View {
 #Preview {
   NavigationStack {
     SyncSettingsView()
-      .environmentObject(AppEnvironment())
+      .environment(AppEnvironment())
   }
 }

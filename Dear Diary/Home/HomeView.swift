@@ -77,7 +77,7 @@ struct LatestMemoryCard: View {
 }
 
 struct HomeView: View {
-  @EnvironmentObject private var environment: AppEnvironment
+  @Environment(AppEnvironment.self) private var environment
 
   private var anniversaryAnchorDay: Date {
     environment.coupleSpaceStore.datingStartDay

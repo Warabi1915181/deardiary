@@ -1,4 +1,3 @@
-import Combine
 import Foundation
 
 enum ToDoStatus: String, Codable, CaseIterable {
@@ -39,13 +38,14 @@ struct ToDoPersistedState: Codable {
   var items: [ToDoItem]
 }
 
-final class ToDoStore: ObservableObject {
+@Observable
+final class ToDoStore {
   static let schemaVersion = 1
   static let legacyAppStorageKey = "todo.store.v1.json"
 
   static let uncategorizedCategoryID = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
 
-  @Published private(set) var state: ToDoPersistedState {
+  private(set) var state: ToDoPersistedState {
     didSet { save() }
   }
 
@@ -56,7 +56,7 @@ final class ToDoStore: ObservableObject {
   private let encoder = JSONEncoder()
   private let decoder = JSONDecoder()
 
-  var onRecordsChanged: ((Set<SyncRecordReference>) -> Void)?
+  @ObservationIgnored var onRecordsChanged: ((Set<SyncRecordReference>) -> Void)?
 
   init(
     storeURL: URL? = nil,

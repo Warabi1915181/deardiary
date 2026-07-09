@@ -21,7 +21,7 @@ struct ToDoView: View {
     }
   }
 
-  @StateObject private var store: ToDoStore
+  var store: ToDoStore
   @State private var selectedSegment: Segment = .active
   @State private var showingNewItemSheet = false
   @State private var showingNewCategorySheet = false
@@ -31,7 +31,7 @@ struct ToDoView: View {
   @State private var pendingCompletionIDs: Set<UUID> = []
 
   init(store: ToDoStore = ToDoStore()) {
-    _store = StateObject(wrappedValue: store)
+    self.store = store
   }
 
   var body: some View {
@@ -300,7 +300,7 @@ private struct ToDoItemRow: View {
 
 private struct NewToDoSheet: View {
   @Environment(\.dismiss) private var dismiss
-  @ObservedObject var store: ToDoStore
+  var store: ToDoStore
 
   @State private var title = ""
   @State private var details = ""
@@ -353,7 +353,7 @@ private struct NewToDoSheet: View {
 
 private struct NewCategorySheet: View {
   @Environment(\.dismiss) private var dismiss
-  @ObservedObject var store: ToDoStore
+  var store: ToDoStore
   @State private var categoryName = ""
   @State private var showValidationError = false
 
@@ -390,7 +390,7 @@ private struct NewCategorySheet: View {
 
 private struct RenameCategorySheet: View {
   @Environment(\.dismiss) private var dismiss
-  @ObservedObject var store: ToDoStore
+  var store: ToDoStore
   let category: ToDoCategory
   @State private var categoryName: String
   @State private var showValidationError = false

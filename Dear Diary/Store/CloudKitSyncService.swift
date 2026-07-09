@@ -1,5 +1,4 @@
 import CloudKit
-import Combine
 import Foundation
 
 enum CloudKitAccountAvailability: Equatable {
@@ -72,11 +71,12 @@ enum CloudKitAccountAvailability: Equatable {
 }
 
 @MainActor
-final class CloudKitSyncService: ObservableObject {
+@Observable
+final class CloudKitSyncService {
   static let containerIdentifier = "iCloud.dev.mochiholic.Dear-Diary"
 
-  @Published private(set) var accountAvailability: CloudKitAccountAvailability = .unknown
-  @Published private(set) var isRefreshingAccountStatus = false
+  private(set) var accountAvailability: CloudKitAccountAvailability = .unknown
+  private(set) var isRefreshingAccountStatus = false
 
   private let container: CKContainer
 

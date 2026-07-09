@@ -1,4 +1,3 @@
-import Combine
 import Foundation
 
 struct CoupleSpace: Identifiable, Codable, Hashable, SyncStamped {
@@ -17,11 +16,12 @@ struct CoupleSpacePersistedState: Codable {
   var pendingPartnerMergePrompt: Bool
 }
 
-final class CoupleSpaceStore: ObservableObject {
+@Observable
+final class CoupleSpaceStore {
   static let schemaVersion = 1
   static let legacyDatingStartDayKey = DatingStartDayStore.appStorageKey
 
-  @Published private(set) var state: CoupleSpacePersistedState {
+  private(set) var state: CoupleSpacePersistedState {
     didSet { save() }
   }
 
@@ -32,7 +32,7 @@ final class CoupleSpaceStore: ObservableObject {
   private let encoder = JSONEncoder()
   private let decoder = JSONDecoder()
 
-  var onRecordsChanged: ((Set<SyncRecordReference>) -> Void)?
+  @ObservationIgnored var onRecordsChanged: ((Set<SyncRecordReference>) -> Void)?
 
   init(
     storeURL: URL? = nil,

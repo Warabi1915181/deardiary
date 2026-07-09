@@ -4,7 +4,7 @@ import UIKit
 import UniformTypeIdentifiers
 
 struct DiaryView: View {
-  @ObservedObject var store: DiaryStore
+  var store: DiaryStore
   @State private var searchText = ""
   @State private var favoriteOnly = false
   @State private var showingEditor = false
@@ -162,7 +162,7 @@ private struct DiaryEntryCard: View {
 }
 
 private struct DiaryEntryDetailView: View {
-  @ObservedObject var store: DiaryStore
+  var store: DiaryStore
   let entryID: UUID
   @Environment(\.dismiss) private var dismiss
   @State private var showingEditor = false
@@ -246,7 +246,7 @@ private struct DiaryEntryDetailView: View {
 }
 
 private struct DiaryEntryEditorView: View {
-  @ObservedObject var store: DiaryStore
+  var store: DiaryStore
   @Environment(\.dismiss) private var dismiss
   @State private var title: String
   @State private var bodyText: String

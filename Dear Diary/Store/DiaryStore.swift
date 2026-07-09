@@ -1,4 +1,3 @@
-import Combine
 import Foundation
 
 enum DiaryMood: String, Codable, CaseIterable, Identifiable {
@@ -59,10 +58,11 @@ struct DiaryPhotoPayload {
   var fileExtension: String
 }
 
-final class DiaryStore: ObservableObject {
+@Observable
+final class DiaryStore {
   static let schemaVersion = 1
 
-  @Published private(set) var state: DiaryPersistedState {
+  private(set) var state: DiaryPersistedState {
     didSet { save() }
   }
 
@@ -73,7 +73,7 @@ final class DiaryStore: ObservableObject {
   private let encoder = JSONEncoder()
   private let decoder = JSONDecoder()
 
-  var onRecordsChanged: ((Set<SyncRecordReference>) -> Void)?
+  @ObservationIgnored var onRecordsChanged: ((Set<SyncRecordReference>) -> Void)?
 
   init(
     storeURL: URL? = nil,

@@ -19,7 +19,7 @@ struct ViewWithBackdrop<Content: View>: View {
 }
 
 struct ContentView: View {
-  @EnvironmentObject private var environment: AppEnvironment
+  @Environment(AppEnvironment.self) private var environment
 
   var body: some View {
     TabView {
@@ -85,5 +85,5 @@ struct ContentView: View {
 
 #Preview {
   ContentView()
-    .environmentObject(AppEnvironment())
+    .environment(AppEnvironment())
 }

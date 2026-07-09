@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct DatingSettingsView: View {
-  @EnvironmentObject private var environment: AppEnvironment
+  @Environment(AppEnvironment.self) private var environment
   @State private var isShowingStartDayModal = false
 
   private var datingStartDayBinding: Binding<Date> {
@@ -49,6 +49,6 @@ struct DatingSettingsView: View {
 #Preview {
   NavigationStack {
     DatingSettingsView()
-      .environmentObject(AppEnvironment())
+      .environment(AppEnvironment())
   }
 }

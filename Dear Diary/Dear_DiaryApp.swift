@@ -70,12 +70,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct Dear_DiaryApp: App {
   @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-  @StateObject private var environment = AppEnvironment()
+  @State private var environment = AppEnvironment()
 
   var body: some Scene {
     WindowGroup {
       ContentView()
-        .environmentObject(environment)
+        .environment(environment)
         .font(.regular)
         .task {
           configureShareAcceptanceHandler()
