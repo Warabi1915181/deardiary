@@ -465,7 +465,7 @@ final class ToDoStore {
     }
   }
 
-  private static func sortItems(_ lhs: ToDoItem, _ rhs: ToDoItem) -> Bool {
+  nonisolated private static func sortItems(_ lhs: ToDoItem, _ rhs: ToDoItem) -> Bool {
     if lhs.order != rhs.order { return lhs.order < rhs.order }
     if lhs.updatedAt != rhs.updatedAt { return lhs.updatedAt > rhs.updatedAt }
     return lhs.id.uuidString < rhs.id.uuidString

@@ -399,7 +399,7 @@ final class DiaryStore {
     )
   }
 
-  private static func sortEntries(_ lhs: DiaryEntry, _ rhs: DiaryEntry) -> Bool {
+  nonisolated private static func sortEntries(_ lhs: DiaryEntry, _ rhs: DiaryEntry) -> Bool {
     if lhs.entryDate != rhs.entryDate {
       return lhs.entryDate > rhs.entryDate
     }

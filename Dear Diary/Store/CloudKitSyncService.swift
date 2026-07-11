@@ -73,7 +73,7 @@ enum CloudKitAccountAvailability: Equatable {
 @MainActor
 @Observable
 final class CloudKitSyncService {
-  static let containerIdentifier = "iCloud.dev.mochiholic.Dear-Diary"
+  nonisolated static let containerIdentifier = "iCloud.dev.mochiholic.Dear-Diary"
 
   private(set) var accountAvailability: CloudKitAccountAvailability = .unknown
   private(set) var isRefreshingAccountStatus = false

@@ -84,10 +84,15 @@ final class AppEnvironment {
   let syncCoordinator: CloudKitSyncCoordinator
 
   init(
-    coupleSpaceStore: CoupleSpaceStore = CoupleSpaceStore(),
-    diaryStore: DiaryStore = DiaryStore(),
-    toDoStore: ToDoStore = ToDoStore()
+    coupleSpaceStore: CoupleSpaceStore? = nil,
+    diaryStore: DiaryStore? = nil,
+    toDoStore: ToDoStore? = nil
   ) {
+    // Construct stores on the (MainActor-isolated) initializer body rather than
+    // in default arguments, which evaluate in a nonisolated context.
+    let coupleSpaceStore = coupleSpaceStore ?? CoupleSpaceStore()
+    let diaryStore = diaryStore ?? DiaryStore()
+    let toDoStore = toDoStore ?? ToDoStore()
     self.coupleSpaceStore = coupleSpaceStore
     self.diaryStore = diaryStore
     self.toDoStore = toDoStore
@@ -115,7 +120,7 @@ final class AppEnvironment {
 @MainActor
 @Observable
 final class CloudKitSyncCoordinator {
-  static let containerIdentifier = CloudKitSyncService.containerIdentifier
+  nonisolated static let containerIdentifier = CloudKitSyncService.containerIdentifier
 
   private(set) var accountAvailability: CloudKitAccountAvailability = .unknown
   private(set) var partnerSyncStatus: PartnerSyncStatus = .notSynced
