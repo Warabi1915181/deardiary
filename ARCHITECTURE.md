@@ -122,6 +122,12 @@ Share flow:
 4. Both users read and write records in the shared space.
 5. Each device keeps local cached data for offline use.
 
+Share acceptance requirements (found during two-device validation):
+
+- Info.plist must declare `CKSharingSupported`, or invite links route to the App Store instead of the installed app.
+- Scene-based SwiftUI apps must accept shares in `UIWindowSceneDelegate.userDidAcceptCloudKitShareWith`. The `UIApplicationDelegate` variant is never called.
+- Share metadata can arrive before the SwiftUI handler is wired (cold launch from an invite link). The app buffers the metadata and processes it once the handler exists.
+
 Sync flow:
 
 ```mermaid
@@ -149,6 +155,10 @@ Behavior:
 - Failed sync retries later.
 
 This keeps the app fast and calm.
+
+Change-tag persistence:
+
+The local stores are plain JSON files, not a CKRecord mirror. `CKSyncEngine` does not track record change tags for records the app builds itself. The app must persist each record's CKRecord system fields (`encodeSystemFields`) across launches and restore them before saving. Without the saved change tag, edits to existing records are rejected as `serverRecordChanged` and silently dropped after a relaunch.
 
 ## Shared Record Fields
 
@@ -193,6 +203,13 @@ Per-entity rules:
 - Plans: latest edit wins.
 - Love notes: latest edit wins.
 - Photos: asset identity wins; replace only when user explicitly changes photo.
+
+Behavior as implemented:
+
+- Fetch path: a remote record is applied only if its `updatedAt` is newer than the local copy; ties break by `modifiedByDeviceID`. This matches latest-wins.
+- Push path: on a `serverRecordChanged` rejection, the app adopts the server record's change tag, reapplies all local field values, and requeues the save. Local values win the push with no `updatedAt` comparison.
+
+Known limitation: a device pushing stale offline edits can overwrite fresher fields on the server. Accepted for MVP; revisit if it causes real data loss.
 
 Deletes:
 
@@ -298,6 +315,11 @@ Work:
 - Import local data.
 - Leave shared space.
 - Resolve broken share state.
+
+## Implementation Notes
+
+- `CloudKitSyncCoordinator` owns sync. It runs two `CKSyncEngine` instances: the owner syncs through the private database, the participant through the shared database, and every send/fetch branches on role.
+- `CloudKitSyncService` is deprecated scaffolding. Only its `containerIdentifier` constant is still referenced. Remove the class after moving the constant.
 
 ## Final State
 
