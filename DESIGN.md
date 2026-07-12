@@ -36,40 +36,66 @@ Good mental model:
 
 > A tiny shared scrapbook that also helps us remember plans.
 
+"Private" has a precise visual meaning here: **enclosure**. The app should feel like being inside a small warm-lit room with the door closed and the world outside. In the dark scene this is expressed through genuine, cozy dimness — dimness is a feature, not a rendering compromise.
+
+## Two Scenes, One Home
+
+The app has two complete emotional renderings, called **scenes**. A scene is a mood with its own palette — not a brightness setting, and never one scene dimmed or inverted into the other.
+
+- **Morning** (light): a soft morning scrapbook. Warm cream, blush pink, soft rose.
+- **Candlelight** (dark): a genuinely dark, warm-lit private room. Deep warm darkness, candle-flame accents.
+
+What unifies them is the **warmth bridge**: every color in both scenes is warm-tinted. No neutral gray, no pure black, no cool tint anywhere — plus identical typography, card language, spacing, and voice.
+
+### Why Candlelight has its own accent
+
+Pink at full saturation vibrates on dark surfaces and fails the candlelit mood. A desaturated dusty rose would be technically workable (standard dark-mode practice), but it tells a weaker story than an ember accent that belongs to the night. Hue-swapping an accent between modes is rare for consumer brands because of brand-recognition concerns; those concerns don't apply to a private app for two people, and reading apps set precedent for warm, scene-framed night palettes. So Candlelight commits to ember.
+
 ## Visual Language
 
-### Palette
+### Color Roles
 
-Use soft, low-contrast colors.
+Colors are defined as **semantic roles**. Each role has one meaning and two renderings — one per scene. Do not add one-off colors; extend the roles.
 
-Preferred color families:
+| Role | Meaning | Morning rendering | Candlelight rendering |
+|---|---|---|---|
+| **Backdrop** | The room — outermost screen background | Warm cream | Deep warm dark (never pure black, never gray) |
+| **Surface** | The paper — cards, sheets, popovers | Warm off-white | Warm dark, a step lighter than Backdrop |
+| **Ink** | Neutral text (headings, labels without emotional weight) | Warm brown / deep plum | Warm off-white |
+| **Ink Muted** | Metadata, quiet labels | Softened warm brown | Softened warm cream |
+| **Romance Accent** | Emotional emphasis: buttons, highlights, fills | Blush pink / soft rose | **Ember** — candle-flame / sunset orange |
+| **Heart Rose** | The heart glyph only | (same as Romance Accent) | Muted dusty rose |
+| **Sage** | Done, growth | Sage green | Olive-shifted, desaturated sage |
+| **Plum** | Secondary flavor | Muted lavender | Plum-shifted, desaturated lavender |
 
-- Warm cream
-- Blush pink
-- Soft rose
-- Sage green
-- Muted lavender
-- Warm brown or deep plum for text
+Rules:
+
+- **Warmth bridge.** No neutral color anywhere, in either scene. Every gray is actually a warm brown; every dark is candlelit, not charcoal.
+- **One accent per scene.** Romance Accent renders rose by Morning, ember by Candlelight. Pink does not appear in Candlelight — with one exception:
+- **Heart Rose is glyph-only.** In Candlelight, the muted dusty rose applies to the heart symbol itself (`heart`, `heart.fill`) wherever it appears, and to nothing else. A button *containing* a heart is still ember. Rose at night is a rare jewel.
+- **Ember is night-only.** It never leaks into Morning. Morning stays pure cream/blush/rose.
+- **Candlelight colors are desaturated.** Saturated colors vibrate on dark surfaces. Every Candlelight rendering is softened relative to its Morning counterpart.
+- **Emotional text wears the accent.** Diary/memory titles and body text render in Romance Accent (rose by Morning, ember by Candlelight) — a deliberate choice; Ink is for neutral text. Accent body text must still meet the AA floor.
 
 Avoid:
 
-- Pure black for large text areas
+- Pure black anywhere (causes halation, kills warmth)
+- Neutral or cool grays
 - Bright corporate blue
 - Harsh red except for tiny heart accents
-- Heavy gray UI
+- Saturated fills on dark surfaces
 
-Current app tokens already point in a good direction:
+Exact color values are decided in dedicated design sessions, not in this document.
 
-- `Backdrop`
-- `PrimaryBackground`
-- `SecondaryBackground`
-- `PrimaryForeground`
-- `SecondaryForeground`
-- `SageBackground`
-- `SageForeground`
-- `Muted`
+#### Migration notes
 
-Future styling should reuse and refine these tokens instead of adding many one-off colors.
+Candlelight draft values are in place for all tokens (first iteration — values still being tuned in design sessions). `Surface` and `HeartRose` exist as assets; `Card` fills with `Surface`; the tab view tints with the Romance Accent explicitly.
+
+Remaining:
+
+- Existing asset names (`PrimaryBackground` = the accent fill, etc.) should be renamed to the role vocabulary above.
+- Morning's Sage renderings are brighter than "sage" implies; revisit when tuning Morning.
+- System-styled controls must be checked in both scenes whenever one is added; SwiftUI's default accent fallback is corporate blue (a violation) — tint explicitly with roles.
 
 ### Cards
 
@@ -78,11 +104,15 @@ Cards should feel like paper notes or diary pages.
 Recommended traits:
 
 - Rounded corners: `16`, `20`, or `24`
-- Soft shadows
-- Warm off-white fills
 - Comfortable padding
 - Gentle spacing
 - No hard borders unless needed as a 1px divider
+- Fill is always the Surface role — never a hardcoded color
+
+Depth per scene:
+
+- **Morning**: warm off-white fills with soft shadows, like paper on a desk.
+- **Candlelight**: elevation is expressed by *lightness*, not shadow. Cards are a step lighter than the Backdrop, as if the paper catches the candle's glow; higher layers (sheets, popovers) are lighter still. Shadows retire at night — they are invisible on dark ground.
 
 Use cards for:
 
@@ -136,6 +166,7 @@ Guidance:
 - Avoid too many filled icons.
 - Use accent color sparingly.
 - Icons support text; they should not dominate.
+- In Candlelight, accented icons render ember like everything else — except the heart glyph, which is Heart Rose.
 
 ## Product Voice
 
@@ -338,9 +369,12 @@ General spacing:
 
 Design should stay readable and usable.
 
+Hard rule:
+
+- **Text meets WCAG AA in both scenes**: body text at least 4.5:1 against its surface, large text at least 3:1. "Soft, low-contrast" applies to surfaces and decoration — never to text against its surface.
+
 Guidance:
 
-- Maintain enough contrast, especially in dark mode.
 - Do not rely on color alone for meaning.
 - Keep touch targets comfortable.
 - Avoid tiny script text for important content.
@@ -350,12 +384,13 @@ Guidance:
 
 When adding new UI:
 
-1. Reuse existing color assets first.
-2. Reuse `Card` or evolve it into a shared app card style.
+1. Use color roles, never one-off colors. Every color must be one of the roles in this document, with a rendering per scene.
+2. Reuse `Card` or evolve it into a shared app card style; its fill is the Surface role.
 3. Keep all spacing in multiples of 4.
 4. Prefer soft cards over dense lists for emotional content.
 5. Use lists/forms mainly for settings and structured editing.
 6. Keep Home curated, not exhaustive.
+7. Check every new screen in both scenes. Candlelight is a first-class scene, not an afterthought.
 
 When choosing between two designs:
 
@@ -363,4 +398,3 @@ When choosing between two designs:
 - Pick simpler over denser.
 - Pick memory-focused over task-focused.
 - Pick readable over decorative.
-
