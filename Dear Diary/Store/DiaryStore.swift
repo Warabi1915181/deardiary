@@ -95,9 +95,9 @@ final class DiaryStore {
       let data = try? Data(contentsOf: self.storeURL),
       let decoded = try? decoder.decode(DiaryPersistedState.self, from: data)
     {
-      self.state = Self.normalize(decoded)
+      state = Self.normalize(decoded)
     } else {
-      self.state = DiaryPersistedState(entries: [])
+      state = DiaryPersistedState(entries: [])
       save()
     }
   }
@@ -337,7 +337,7 @@ final class DiaryStore {
   @discardableResult
   private func notifyChanges(for entry: DiaryEntry) -> Set<SyncRecordReference> {
     var references: Set<SyncRecordReference> = [
-      SyncRecordReference(kind: .diaryEntry, id: entry.id)
+      SyncRecordReference(kind: .diaryEntry, id: entry.id),
     ]
     for photo in entry.photos {
       references.insert(SyncRecordReference(kind: .diaryPhoto, id: photo.id))
@@ -399,7 +399,7 @@ final class DiaryStore {
     )
   }
 
-  nonisolated private static func sortEntries(_ lhs: DiaryEntry, _ rhs: DiaryEntry) -> Bool {
+  private nonisolated static func sortEntries(_ lhs: DiaryEntry, _ rhs: DiaryEntry) -> Bool {
     if lhs.entryDate != rhs.entryDate {
       return lhs.entryDate > rhs.entryDate
     }
@@ -425,4 +425,3 @@ private extension DiaryEntry {
     return tags.contains { $0.lowercased().contains(lowercasedQuery) }
   }
 }
-

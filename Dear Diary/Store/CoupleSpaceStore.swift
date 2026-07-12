@@ -54,10 +54,10 @@ final class CoupleSpaceStore {
       let data = try? Data(contentsOf: self.storeURL),
       let decoded = try? decoder.decode(CoupleSpacePersistedState.self, from: data)
     {
-      self.state = Self.normalize(decoded)
+      state = Self.normalize(decoded)
     } else {
       let datingStartDay = Self.legacyDatingStartDay(from: userDefaults)
-      self.state = CoupleSpacePersistedState(
+      state = CoupleSpacePersistedState(
         coupleSpace: nil,
         syncConnection: nil,
         pendingPartnerMergePrompt: false

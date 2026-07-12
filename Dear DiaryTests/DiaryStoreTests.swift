@@ -1,6 +1,6 @@
+@testable import Dear_Diary
 import Foundation
 import Testing
-@testable import Dear_Diary
 
 @MainActor
 struct DiaryStoreTests {
@@ -11,7 +11,7 @@ struct DiaryStoreTests {
       photosDirectoryURL: fixture.photosURL,
       deviceID: "test-device"
     )
-    let entryDate = Date(timeIntervalSince1970: 1_800)
+    let entryDate = Date(timeIntervalSince1970: 1800)
 
     let id = try store.addEntry(
       title: " First date ",
@@ -50,7 +50,7 @@ struct DiaryStoreTests {
     let cozyID = try #require(try store.addEntry(
       title: "Rainy morning",
       body: "Coffee at home",
-      entryDate: Date(timeIntervalSince1970: 1_000),
+      entryDate: Date(timeIntervalSince1970: 1000),
       mood: .cozy,
       tags: ["home"],
       photoPayloads: []

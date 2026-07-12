@@ -36,7 +36,7 @@ enum CloudKitField {
   static let version = "version"
 }
 
-struct CloudKitRecordMapper {
+enum CloudKitRecordMapper {
   static func zoneID(ownerName: String) -> CKRecordZone.ID {
     CKRecordZone.ID(zoneName: CloudKitRecordTypes.zoneName, ownerName: ownerName)
   }

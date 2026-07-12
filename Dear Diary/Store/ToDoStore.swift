@@ -76,7 +76,7 @@ final class ToDoStore {
     encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
 
     if let previewState {
-      self.state = Self.normalize(previewState, deviceID: deviceID)
+      state = Self.normalize(previewState, deviceID: deviceID)
       return
     }
 
@@ -84,18 +84,18 @@ final class ToDoStore {
       let data = try? Data(contentsOf: self.storeURL),
       let decoded = try? decoder.decode(ToDoPersistedState.self, from: data)
     {
-      self.state = Self.normalize(decoded, deviceID: deviceID)
+      state = Self.normalize(decoded, deviceID: deviceID)
       return
     }
 
     if let migrated = Self.loadLegacyState(from: userDefaults) {
-      self.state = Self.normalize(migrated, deviceID: deviceID)
+      state = Self.normalize(migrated, deviceID: deviceID)
       save()
       userDefaults.removeObject(forKey: Self.legacyAppStorageKey)
       return
     }
 
-    self.state = Self.defaultState(deviceID: deviceID)
+    state = Self.defaultState(deviceID: deviceID)
     save()
   }
 
@@ -180,7 +180,7 @@ final class ToDoStore {
     rebuildOrder(in: Self.uncategorizedCategoryID, status: .active)
     rebuildOrder(in: Self.uncategorizedCategoryID, status: .completed)
     var changedReferences: Set<SyncRecordReference> = [
-      SyncRecordReference(kind: .toDoCategory, id: id)
+      SyncRecordReference(kind: .toDoCategory, id: id),
     ]
     for itemID in changedItems {
       changedReferences.insert(SyncRecordReference(kind: .toDoItem, id: itemID))
@@ -269,7 +269,7 @@ final class ToDoStore {
       targetIDs.insert(dragged.id, at: targetIDs.count)
     }
 
-    if dragged.categoryID == safeCategoryID && dragged.status == targetStatus {
+    if dragged.categoryID == safeCategoryID, dragged.status == targetStatus {
       applyOrder(itemIDs: targetIDs, categoryID: safeCategoryID, status: targetStatus)
     } else {
       applyOrder(itemIDs: sourceIDs, categoryID: dragged.categoryID, status: dragged.status)
@@ -425,7 +425,7 @@ final class ToDoStore {
       .sorted { lhs, rhs in lhs.order < rhs.order }
 
     var rebuilt: [ToDoCategory] = [
-      Self.makeUncategorizedCategory(existing: state.categories.first(where: { $0.id == Self.uncategorizedCategoryID }))
+      Self.makeUncategorizedCategory(existing: state.categories.first(where: { $0.id == Self.uncategorizedCategoryID })),
     ]
 
     rebuilt += regularCategories.enumerated().map { index, category in
@@ -465,7 +465,7 @@ final class ToDoStore {
     }
   }
 
-  nonisolated private static func sortItems(_ lhs: ToDoItem, _ rhs: ToDoItem) -> Bool {
+  private nonisolated static func sortItems(_ lhs: ToDoItem, _ rhs: ToDoItem) -> Bool {
     if lhs.order != rhs.order { return lhs.order < rhs.order }
     if lhs.updatedAt != rhs.updatedAt { return lhs.updatedAt > rhs.updatedAt }
     return lhs.id.uuidString < rhs.id.uuidString
@@ -507,7 +507,7 @@ final class ToDoStore {
           deletedAt: nil,
           modifiedByDeviceID: deviceID,
           version: schemaVersion
-        )
+        ),
       ],
       items: []
     )
@@ -581,7 +581,7 @@ final class ToDoStore {
       }
 
     let normalizedCategories: [ToDoCategory] = [
-      makeUncategorizedCategory(existing: categories.first(where: { $0.id == uncategorizedCategoryID }))
+      makeUncategorizedCategory(existing: categories.first(where: { $0.id == uncategorizedCategoryID })),
     ] + regularCategories + categories.filter { $0.deletedAt != nil }
 
     let categoryIDs = Set(normalizedCategories.filter { $0.deletedAt == nil }.map(\.id))
@@ -638,8 +638,7 @@ private struct LegacyToDoPersistedState: Codable {
 private extension Array where Element == ToDoItem {
   func reorderedItems(in categoryID: UUID, status: ToDoStatus) -> [ToDoItem] {
     var output = self
-    let bucket = self
-      .filter { $0.categoryID == categoryID && $0.status == status && $0.deletedAt == nil }
+    let bucket = filter { $0.categoryID == categoryID && $0.status == status && $0.deletedAt == nil }
       .sorted { $0.order < $1.order }
 
     for (index, item) in bucket.enumerated() {

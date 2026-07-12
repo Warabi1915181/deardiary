@@ -13,20 +13,20 @@ struct CloudSharingView: UIViewControllerRepresentable {
     return controller
   }
 
-  func updateUIViewController(_ uiViewController: UICloudSharingController, context: Context) {}
+  func updateUIViewController(_: UICloudSharingController, context _: Context) {}
 
   func makeCoordinator() -> Coordinator {
     Coordinator()
   }
 
   final class Coordinator: NSObject, UICloudSharingControllerDelegate {
-    func cloudSharingControllerDidSaveShare(_ csc: UICloudSharingController) {}
+    func cloudSharingControllerDidSaveShare(_: UICloudSharingController) {}
 
-    func cloudSharingControllerDidStopSharing(_ csc: UICloudSharingController) {}
+    func cloudSharingControllerDidStopSharing(_: UICloudSharingController) {}
 
-    func cloudSharingController(_ csc: UICloudSharingController, failedToSaveShareWithError error: Error) {}
+    func cloudSharingController(_: UICloudSharingController, failedToSaveShareWithError _: Error) {}
 
-    func itemTitle(for csc: UICloudSharingController) -> String? {
+    func itemTitle(for _: UICloudSharingController) -> String? {
       "Dear Diary"
     }
   }

@@ -19,7 +19,7 @@ enum DatingStartDayStore {
     let todayStart = calendar.startOfDay(for: referenceNow)
     let endDate =
       calendar.date(bySettingHour: 23, minute: 59, second: 59, of: todayStart) ?? todayStart
-    return startDate...endDate
+    return startDate ... endDate
   }
 
   static func clamp(_ date: Date, in range: ClosedRange<Date>? = nil) -> Date {

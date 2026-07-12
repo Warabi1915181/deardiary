@@ -60,7 +60,7 @@ enum CloudKitAccountAvailability: Equatable {
       return "Dear Diary could not determine iCloud availability."
     case .temporarilyUnavailable:
       return "iCloud is temporarily unavailable. Try again later."
-    case .error(let message):
+    case let .error(message):
       return message
     }
   }

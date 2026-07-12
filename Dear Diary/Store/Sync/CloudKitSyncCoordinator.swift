@@ -15,7 +15,7 @@ enum PartnerSyncStatus: Equatable {
     case .notSynced: return "Not Synced"
     case .invitePartner: return "Invite Partner"
     case .waitingForPartner: return "Waiting for Partner"
-    case .synced(let partnerName):
+    case let .synced(partnerName):
       if let partnerName, !partnerName.isEmpty {
         return "Synced with \(partnerName)"
       }
@@ -40,7 +40,7 @@ enum PartnerSyncStatus: Equatable {
       return "Syncing your latest changes."
     case .offlineChangesSaved:
       return "Changes are saved on this device and will sync when iCloud is available."
-    case .syncFailed(let message):
+    case let .syncFailed(message):
       return message
     }
   }
@@ -96,7 +96,7 @@ final class AppEnvironment {
     self.coupleSpaceStore = coupleSpaceStore
     self.diaryStore = diaryStore
     self.toDoStore = toDoStore
-    self.syncCoordinator = CloudKitSyncCoordinator(
+    syncCoordinator = CloudKitSyncCoordinator(
       coupleSpaceStore: coupleSpaceStore,
       diaryStore: diaryStore,
       toDoStore: toDoStore
@@ -216,7 +216,7 @@ final class CloudKitSyncCoordinator {
 
     let saved = try await privateDatabase.modifyRecords(saving: recordsToSave + [share], deleting: [])
     for (_, result) in saved.saveResults {
-      if case .success(let record) = result {
+      if case let .success(record) = result {
         rememberRecord(record)
         if record is CKShare {
           pendingShare = record as? CKShare
@@ -571,7 +571,7 @@ final class CloudKitSyncCoordinator {
 
   private func baseRecord(
     recordID: CKRecord.ID,
-    type: String,
+    type _: String,
     populate: () -> CKRecord
   ) -> CKRecord {
     if let known = lastKnownRecords[recordID] {
@@ -715,7 +715,7 @@ extension CloudKitSyncCoordinator: CKSyncEngineDelegate {
 
   private func handleEventOnMainActor(_ event: CKSyncEngine.Event, syncEngine: CKSyncEngine) {
     switch event {
-    case .stateUpdate(let update):
+    case let .stateUpdate(update):
       if syncEngine === privateSyncEngine {
         syncState.privateEngineState = update.stateSerialization
       } else if syncEngine === sharedSyncEngine {
@@ -723,14 +723,14 @@ extension CloudKitSyncCoordinator: CKSyncEngineDelegate {
       }
       saveSyncState()
 
-    case .fetchedRecordZoneChanges(let changes):
+    case let .fetchedRecordZoneChanges(changes):
       for modification in changes.modifications {
         applyFetchedRecord(modification.record)
       }
       saveSyncState()
       refreshPartnerSyncStatus()
 
-    case .sentRecordZoneChanges(let results):
+    case let .sentRecordZoneChanges(results):
       for savedRecord in results.savedRecords {
         rememberRecord(savedRecord)
       }

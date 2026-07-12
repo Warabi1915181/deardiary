@@ -1,6 +1,6 @@
+@testable import Dear_Diary
 import Foundation
 import Testing
-@testable import Dear_Diary
 
 @MainActor
 struct CoupleSpaceStoreTests {
@@ -60,9 +60,9 @@ struct ToDoStoreSyncTests {
           categoryID: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
           status: .active,
           order: 0,
-          createdAt: Date(timeIntervalSince1970: 1_000),
+          createdAt: Date(timeIntervalSince1970: 1000),
           completedAt: nil
-        )
+        ),
       ]
     )
     let data = try JSONEncoder().encode(legacy)
@@ -100,7 +100,7 @@ struct ToDoStoreSyncTests {
   @Test func latestRemoteToDoItemWins() throws {
     let fixture = try StoreFixture()
     let itemID = UUID()
-    let localUpdatedAt = Date(timeIntervalSince1970: 1_000)
+    let localUpdatedAt = Date(timeIntervalSince1970: 1000)
     let previewState = ToDoPersistedState(
       categories: [
         ToDoCategory(
@@ -113,7 +113,7 @@ struct ToDoStoreSyncTests {
           deletedAt: nil,
           modifiedByDeviceID: "test-device",
           version: 1
-        )
+        ),
       ],
       items: [
         ToDoItem(
@@ -130,7 +130,7 @@ struct ToDoStoreSyncTests {
           deletedAt: nil,
           modifiedByDeviceID: "test-device",
           version: 1
-        )
+        ),
       ]
     )
     let store = ToDoStore(
@@ -150,7 +150,7 @@ struct ToDoStoreSyncTests {
       order: 0,
       createdAt: localUpdatedAt,
       completedAt: nil,
-      updatedAt: Date(timeIntervalSince1970: 2_000),
+      updatedAt: Date(timeIntervalSince1970: 2000),
       deletedAt: nil,
       modifiedByDeviceID: "partner-device",
       version: 1

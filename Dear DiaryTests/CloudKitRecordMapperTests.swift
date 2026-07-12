@@ -1,7 +1,7 @@
 import CloudKit
+@testable import Dear_Diary
 import Foundation
 import Testing
-@testable import Dear_Diary
 
 struct CloudKitRecordMapperTests {
   @Test func coupleSpaceRoundTrip() {
