@@ -157,6 +157,13 @@ The scrapbook feel comes from a few physical cues, used with restraint:
 - **Warm shadows.** Shadows are warm brown, never neutral black — paper on a wooden desk, not a floating UI panel.
 - **One cue per card, at most.** Tape, rotation, and doodles are seasoning. A card earns a cue when it holds a memory; utility cards (settings, sync, forms) get none.
 
+By Candlelight the cues are rendered in light, not shade (adopted 2026-07 from the evening reference):
+
+- **Glow replaces shadow.** Cards lose their drop shadow and gain a faint ember rim on the top edge — the paper catching the flame. The rim is a whisper (~0.2 opacity), never a neon outline.
+- **Tape catches the light.** Washi tape renders as translucent ember, softly lit, instead of blush paper.
+- **The heart glows.** The Heart Rose glyph carries a small rose glow at night — the one jewel in the dark room.
+- Same restraint rule: glow is the night rendering of an existing cue, never a new layer of decoration. No string lights, no fireflies, no glowing borders on utility surfaces.
+
 Rejected from the reference mock (they violate "not overly cute" / readability):
 
 - Mascots and character stickers

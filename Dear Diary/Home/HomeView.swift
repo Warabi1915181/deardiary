@@ -2,6 +2,7 @@ import SwiftUI
 import UIKit
 
 struct AnniversaryCard: View {
+  @Environment(\.colorScheme) private var colorScheme
   var anniversaryDate: Date
   var numberOfDays: Int
 
@@ -12,6 +13,11 @@ struct AnniversaryCard: View {
           Image(systemName: "heart.fill")
             .foregroundColor(Color("HeartRose"))
             .font(.system(size: 16))
+            // Candlelight: the rose jewel glows faintly in the dark.
+            .shadow(
+              color: Color("HeartRose").opacity(colorScheme == .dark ? 0.55 : 0),
+              radius: 5
+            )
           Text("Our Anniversary")
             .fontWeight(.semibold)
         }
