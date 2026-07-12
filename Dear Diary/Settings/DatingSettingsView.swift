@@ -27,6 +27,7 @@ struct DatingSettingsView: View {
       Button("Dating Start Day: \(datingStartDayString)") {
         isShowingStartDayModal = true
       }
+      .listRowBackground(Color("Surface"))
       .sheet(isPresented: $isShowingStartDayModal) {
         NavigationStack {
           DatePicker(
@@ -38,9 +39,12 @@ struct DatingSettingsView: View {
           .datePickerStyle(.graphical)
           .padding()
           .navigationTitle("Dating Start Day")
+          .background(Color("Backdrop").ignoresSafeArea())
         }
       }
     }
+    .scrollContentBackground(.hidden)
+    .background(Color("Backdrop").ignoresSafeArea())
     .navigationTitle("Dating Start Day")
     .navigationBarTitleDisplayMode(.inline)
   }

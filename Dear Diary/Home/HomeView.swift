@@ -10,7 +10,7 @@ struct AnniversaryCard: View {
       VStack(alignment: .leading, spacing: 8) {
         HStack(spacing: 4) {
           Image(systemName: "heart.fill")
-            .foregroundColor(.red)
+            .foregroundColor(Color("HeartRose"))
             .font(.system(size: 16))
           Text("Our Anniversary")
             .fontWeight(.semibold)

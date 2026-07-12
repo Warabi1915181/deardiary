@@ -20,6 +20,7 @@ struct SettingsMenuView: View {
               .frame(maxWidth: .infinity, alignment: .leading)
           }
         }
+        .listRowBackground(Color("Surface"))
 
         Section(header: Text("Sync")) {
           NavigationLink(destination: SyncSettingsView()) {
@@ -27,6 +28,7 @@ struct SettingsMenuView: View {
               .frame(maxWidth: .infinity, alignment: .leading)
           }
         }
+        .listRowBackground(Color("Surface"))
 
       }
       .listStyle(.insetGrouped)

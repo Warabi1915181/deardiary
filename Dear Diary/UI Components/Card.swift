@@ -22,7 +22,7 @@ struct Card<Content: View>: View {
       .padding(.horizontal, horizontalPadding)
       .background(
         RoundedRectangle(cornerRadius: 16)
-          .fill(Color(.white))
+          .fill(Color("Surface"))
           .shadow(color: Color(.sRGBLinear, white: 0, opacity: 0.05), radius: 4, x: 0, y: 2)
       )
   }

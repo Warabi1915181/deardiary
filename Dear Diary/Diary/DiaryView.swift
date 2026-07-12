@@ -83,6 +83,7 @@ struct DiaryView: View {
       Toggle("Favorites only", isOn: $favoriteOnly)
         .font(.regular(size: 16))
         .toggleStyle(.switch)
+        .tint(Color("PrimaryForeground"))
     }
   }
 
@@ -130,7 +131,7 @@ private struct DiaryEntryCard: View {
           Spacer()
           if entry.isFavorite {
             Image(systemName: "heart.fill")
-              .foregroundStyle(Color("PrimaryForeground"))
+              .foregroundStyle(Color("HeartRose"))
           }
         }
 
@@ -207,6 +208,7 @@ private struct DiaryEntryDetailView: View {
           .padding(16)
       }
     }
+    .background(Color("Backdrop").ignoresSafeArea())
     .navigationTitle("Memory")
     .navigationBarTitleDisplayMode(.inline)
     .toolbar {
@@ -216,6 +218,7 @@ private struct DiaryEntryDetailView: View {
             _ = store.setFavorite(entry.id, isFavorite: !entry.isFavorite)
           } label: {
             Image(systemName: entry.isFavorite ? "heart.fill" : "heart")
+              .foregroundStyle(Color("HeartRose"))
           }
 
           Button("Edit") {
@@ -295,6 +298,7 @@ private struct DiaryEntryEditorView: View {
             .frame(minHeight: 160)
             .focused($focusedField, equals: .body)
         }
+        .listRowBackground(Color("Surface"))
 
         Section("Tags") {
           TextField("cozy, trip, dinner", text: $tagsText)
@@ -313,6 +317,7 @@ private struct DiaryEntryEditorView: View {
             }
           }
         }
+        .listRowBackground(Color("Surface"))
 
         Section("Photos") {
           if !keptPhotos.isEmpty {
@@ -348,6 +353,7 @@ private struct DiaryEntryEditorView: View {
               .foregroundStyle(Color("SecondaryForeground"))
           }
         }
+        .listRowBackground(Color("Surface"))
 
         if let errorMessage {
           Section {
@@ -355,8 +361,11 @@ private struct DiaryEntryEditorView: View {
               .font(.regular(size: 14))
               .foregroundStyle(.red)
           }
+          .listRowBackground(Color("Surface"))
         }
       }
+      .scrollContentBackground(.hidden)
+      .background(Color("Backdrop").ignoresSafeArea())
       .scrollDismissesKeyboard(.interactively)
       .navigationTitle(entry == nil ? "New Memory" : "Edit Memory")
       .navigationBarTitleDisplayMode(.inline)

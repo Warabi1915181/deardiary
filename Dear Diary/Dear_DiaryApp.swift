@@ -72,6 +72,16 @@ struct Dear_DiaryApp: App {
   @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
   @State private var environment = AppEnvironment()
 
+  init() {
+    let segmented = UISegmentedControl.appearance()
+    segmented.backgroundColor = UIColor(named: "Muted")
+    segmented.selectedSegmentTintColor = UIColor(named: "PrimaryBackground")
+    segmented.setTitleTextAttributes(
+      [.foregroundColor: UIColor(named: "PrimaryForeground") ?? .label],
+      for: .selected
+    )
+  }
+
   var body: some Scene {
     WindowGroup {
       ContentView()

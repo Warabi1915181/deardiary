@@ -50,6 +50,7 @@ struct ContentView: View {
         }
       }
     }
+    .tint(Color("PrimaryForeground"))
     .overlay(alignment: .top) {
       syncBanner
     }

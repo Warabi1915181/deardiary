@@ -36,6 +36,7 @@ struct SyncSettingsView: View {
         }
         .disabled(syncCoordinator.isRefreshingAccountStatus)
       }
+      .listRowBackground(Color("Surface"))
 
       Section("Partner Sync") {
         LabeledContent("Sync Status") {
@@ -72,13 +73,17 @@ struct SyncSettingsView: View {
             .foregroundStyle(.red)
         }
       }
+      .listRowBackground(Color("Surface"))
 
       Section("Privacy") {
         Text("Your data syncs through iCloud.")
           .font(.regular(size: 14))
           .foregroundStyle(Color("SecondaryForeground"))
       }
+      .listRowBackground(Color("Surface"))
     }
+    .scrollContentBackground(.hidden)
+    .background(Color("Backdrop").ignoresSafeArea())
     .navigationTitle("Sync")
     .navigationBarTitleDisplayMode(.inline)
     .task {
