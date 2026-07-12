@@ -187,7 +187,9 @@ private struct DiaryEntryDetailView: View {
 
           DiaryEntryMetadataRow(entry: entry)
 
-          if !entry.photos.isEmpty {
+          if entry.photos.count == 1, let photo = entry.photos.first {
+            DiaryPhotoThumbnail(url: store.photoURL(for: photo), height: 220)
+          } else if !entry.photos.isEmpty {
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
               ForEach(entry.photos) { photo in
                 DiaryPhotoThumbnail(url: store.photoURL(for: photo), height: 160)
