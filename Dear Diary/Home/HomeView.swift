@@ -3,13 +3,18 @@ import UIKit
 
 struct AnniversaryCard: View {
   @Environment(\.colorScheme) private var colorScheme
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   var anniversaryDate: Date
   var numberOfDays: Int
+
+  private var headingFont: Font {
+    .bold(size: dynamicTypeSize.isAccessibilitySize ? 14 : 20)
+  }
 
   var body: some View {
     Card(verticalPadding: 16) {
       VStack(alignment: .leading, spacing: 8) {
-        HStack(spacing: 4) {
+        HStack(alignment: .top, spacing: 4) {
           Image(systemName: "heart.fill")
             .foregroundColor(Color("HeartRose"))
             .font(.system(size: 16))
@@ -19,38 +24,43 @@ struct AnniversaryCard: View {
               radius: 5
             )
           Text("Our Anniversary")
-            .fontWeight(.semibold)
+            .font(headingFont)
+            .lineLimit(2)
+            .minimumScaleFactor(0.6)
+            .allowsTightening(true)
         }
         Text("\(numberOfDays)")
           .font(.fancy(size: 38))
         Text("days left")
-          .fontWeight(.semibold)
+          .font(.regular(size: 18))
         Text(anniversaryDate.formatted(date: .abbreviated, time: .omitted))
           .font(.regular)
       }
       .frame(maxWidth: .infinity, alignment: .leading)
-      .padding(.vertical, 16)
-      .padding(.horizontal, 16)
-      .background(
-        RoundedRectangle(cornerRadius: 12, style: .continuous)
-          .fill(Color("Backdrop"))
-      )
     }
   }
 }
 
 struct LatestMemoryCard: View {
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   let entry: DiaryEntry
   let photoURL: URL?
+
+  private var headingFont: Font {
+    .bold(size: dynamicTypeSize.isAccessibilitySize ? 14 : 20)
+  }
 
   var body: some View {
     Card(verticalPadding: 16) {
       VStack(alignment: .leading, spacing: 12) {
-        HStack(spacing: 4) {
+        HStack(alignment: .top, spacing: 4) {
           Image(systemName: "book.closed")
             .foregroundStyle(Color("RomanceForeground"))
           Text("Latest Memory")
-            .fontWeight(.semibold)
+            .font(headingFont)
+            .lineLimit(2)
+            .minimumScaleFactor(0.6)
+            .allowsTightening(true)
         }
 
         Text(entry.title)
@@ -118,16 +128,19 @@ struct HomeView: View {
   }
 
   var body: some View {
-    VStack(spacing: 16) {
-      AnniversaryCard(anniversaryDate: anniversaryDate, numberOfDays: daysUntilAnniversary)
-      if let latestEntry = environment.diaryStore.latestEntry {
-        LatestMemoryCard(
-          entry: latestEntry,
-          photoURL: latestEntry.photos.first.map { environment.diaryStore.photoURL(for: $0) }
-        )
+    ScrollView {
+      VStack(spacing: 16) {
+        AnniversaryCard(anniversaryDate: anniversaryDate, numberOfDays: daysUntilAnniversary)
+        if let latestEntry = environment.diaryStore.latestEntry {
+          LatestMemoryCard(
+            entry: latestEntry,
+            photoURL: latestEntry.photos.first.map { environment.diaryStore.photoURL(for: $0) }
+          )
+        }
       }
+      .padding(.horizontal, 16)
+      .padding(.vertical, 16)
     }
-    .padding(.horizontal, 16)
-    .padding(.vertical)
+    .scrollIndicators(.hidden)
   }
 }
