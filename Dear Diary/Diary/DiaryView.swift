@@ -323,19 +323,15 @@ private struct DiaryEntryEditorView: View {
 
         Section("Photos") {
           if !keptPhotos.isEmpty {
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
-              ForEach(keptPhotos) { photo in
-                ZStack(alignment: .topTrailing) {
-                  DiaryPhotoThumbnail(url: store.photoURL(for: photo), height: 140)
-                  Button {
-                    keptPhotos.removeAll { $0.id == photo.id }
-                  } label: {
-                    Image(systemName: "xmark.circle.fill")
-                      .font(.system(size: 24))
-                      .foregroundStyle(Color("RomanceForeground"))
-                      .background(Color("RomanceBackground"), in: Circle())
+            Grid(horizontalSpacing: 8, verticalSpacing: 8) {
+              ForEach(Array(stride(from: 0, to: keptPhotos.count, by: 2)), id: \.self) { rowStart in
+                GridRow {
+                  ForEach(keptPhotos[rowStart..<min(rowStart + 2, keptPhotos.count)]) { photo in
+                    keptPhotoCell(photo)
                   }
-                  .padding(8)
+                  if keptPhotos.count - rowStart == 1 {
+                    Color.clear.gridCellUnsizedAxes(.vertical)
+                  }
                 }
               }
             }
@@ -390,6 +386,22 @@ private struct DiaryEntryEditorView: View {
           }
         }
       }
+    }
+  }
+
+  private func keptPhotoCell(_ photo: DiaryPhoto) -> some View {
+    ZStack(alignment: .topTrailing) {
+      DiaryPhotoThumbnail(url: store.photoURL(for: photo), height: 140)
+      Button {
+        keptPhotos.removeAll { $0.id == photo.id }
+      } label: {
+        Image(systemName: "xmark.circle.fill")
+          .font(.system(size: 24))
+          .foregroundStyle(Color("RomanceForeground"))
+          .background(Color("RomanceBackground"), in: Circle())
+      }
+      .buttonStyle(.borderless)
+      .padding(8)
     }
   }
 
@@ -488,6 +500,7 @@ private struct DiaryPhotoThumbnail: View {
     .frame(maxWidth: .infinity)
     .frame(height: height)
     .clipShape(RoundedRectangle(cornerRadius: 16))
+    .contentShape(RoundedRectangle(cornerRadius: 16))
   }
 }
 
