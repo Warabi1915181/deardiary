@@ -24,7 +24,7 @@ struct WashiTape: View {
       .shadow(
         color: colorScheme == .dark
           ? Color("RomanceForeground").opacity(0.3)
-          : Color(red: 0.45, green: 0.3, blue: 0.25).opacity(0.15),
+          : Color("WarmShadow").opacity(0.15),
         radius: colorScheme == .dark ? 4 : 2, x: 0, y: 1
       )
   }
@@ -41,7 +41,7 @@ struct TapedPhoto<Content: View>: View {
       .padding(6)
       .background(Color("Surface"))
       .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-      .shadow(color: Color(red: 0.45, green: 0.3, blue: 0.25).opacity(0.18), radius: 4, x: 0, y: 2)
+      .shadow(color: Color("WarmShadow").opacity(0.18), radius: 4, x: 0, y: 2)
       .rotationEffect(.degrees(angle))
       .overlay(alignment: .top) {
         WashiTape()

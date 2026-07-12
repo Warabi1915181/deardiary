@@ -23,13 +23,11 @@ struct Card<Content: View>: View {
       .padding(.horizontal, horizontalPadding)
       .background(
         // Morning: paper on a desk — warm-tinted shadow, never neutral black.
-        // Candlelight: shadows retire; depth comes from the lit edge below.
+        // Candlelight: shadows retire; Warm Shadow resolves to clear at night.
         RoundedRectangle(cornerRadius: 20, style: .continuous)
           .fill(Color("Surface"))
           .shadow(
-            color: colorScheme == .dark
-              ? .clear
-              : Color(red: 0.45, green: 0.3, blue: 0.25).opacity(0.1),
+            color: Color("WarmShadow").opacity(0.1),
             radius: 6, x: 0, y: 3
           )
       )
