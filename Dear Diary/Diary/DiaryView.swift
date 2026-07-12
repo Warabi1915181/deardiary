@@ -18,7 +18,7 @@ struct DiaryView: View {
     ScrollView {
       VStack(alignment: .leading, spacing: 16) {
         Text("Diary")
-          .font(.regularItalic(size: 48))
+          .font(.screenTitle)
           .foregroundStyle(Color("RomanceForeground"))
 
         searchControls
@@ -81,7 +81,7 @@ struct DiaryView: View {
       )
 
       Toggle("Favorites only", isOn: $favoriteOnly)
-        .font(.regular(size: 16))
+        .font(.body)
         .toggleStyle(.switch)
         .tint(Color("RomanceForeground"))
     }
@@ -93,10 +93,10 @@ struct DiaryView: View {
         .font(.system(size: 36))
         .foregroundStyle(Color("PlumForeground"))
       Text("No memories yet.")
-        .font(.regular(size: 18))
+        .font(.bodyEmphasis)
         .foregroundStyle(Color("PlumForeground"))
       Text("Start with today.")
-        .font(.regular(size: 16))
+        .font(.body)
         .foregroundStyle(Color("PlumForeground"))
       Button("Write a Memory") {
         showingEditor = true
@@ -122,10 +122,10 @@ private struct DiaryEntryCard: View {
         HStack(alignment: .top) {
           VStack(alignment: .leading, spacing: 4) {
             Text(entry.entryDate.formatted(date: .abbreviated, time: .omitted))
-              .font(.regular(size: 14))
+              .font(.metadata)
               .foregroundStyle(Color("PlumForeground"))
             Text(entry.title)
-              .font(.bold(size: 22))
+              .font(.entryTitle)
               .foregroundStyle(Color("RomanceForeground"))
           }
           Spacer()
@@ -137,7 +137,7 @@ private struct DiaryEntryCard: View {
 
         if !entry.body.isEmpty {
           Text(entry.body)
-            .font(.regular(size: 16))
+            .font(.body)
             .foregroundStyle(Color("RomanceForeground"))
             .lineLimit(3)
         }
@@ -147,7 +147,7 @@ private struct DiaryEntryCard: View {
             .overlay(alignment: .bottomTrailing) {
               if entry.photos.count > 1 {
                 Text("+\(entry.photos.count - 1)")
-                  .font(.regular(size: 14))
+                  .font(.metadata)
                   .padding(.horizontal, 8)
                   .padding(.vertical, 4)
                   .background(.thinMaterial, in: Capsule())
@@ -178,11 +178,11 @@ private struct DiaryEntryDetailView: View {
       if let entry {
         VStack(alignment: .leading, spacing: 16) {
           Text(entry.entryDate.formatted(date: .abbreviated, time: .omitted))
-            .font(.regular(size: 16))
+            .font(.body)
             .foregroundStyle(Color("PlumForeground"))
 
           Text(entry.title)
-            .font(.regularItalic(size: 40))
+            .font(.entryTitleLarge)
             .foregroundStyle(Color("RomanceForeground"))
 
           DiaryEntryMetadataRow(entry: entry)
@@ -198,14 +198,14 @@ private struct DiaryEntryDetailView: View {
           }
 
           Text(entry.body)
-            .font(.regular(size: 18))
+            .font(.bodyEmphasis)
             .foregroundStyle(Color("RomanceForeground"))
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(16)
       } else {
         Text("This memory is no longer available.")
-          .font(.regular(size: 16))
+          .font(.body)
           .foregroundStyle(Color("PlumForeground"))
           .padding(16)
       }
@@ -326,7 +326,7 @@ private struct DiaryEntryEditorView: View {
             Grid(horizontalSpacing: 8, verticalSpacing: 8) {
               ForEach(Array(stride(from: 0, to: keptPhotos.count, by: 2)), id: \.self) { rowStart in
                 GridRow {
-                  ForEach(keptPhotos[rowStart..<min(rowStart + 2, keptPhotos.count)]) { photo in
+                  ForEach(keptPhotos[rowStart ..< min(rowStart + 2, keptPhotos.count)]) { photo in
                     keptPhotoCell(photo)
                   }
                   if keptPhotos.count - rowStart == 1 {
@@ -347,7 +347,7 @@ private struct DiaryEntryEditorView: View {
 
           if !selectedPhotoItems.isEmpty {
             Text("\(selectedPhotoItems.count) new photo\(selectedPhotoItems.count == 1 ? "" : "s") selected")
-              .font(.regular(size: 14))
+              .font(.metadata)
               .foregroundStyle(Color("PlumForeground"))
           }
         }
@@ -356,7 +356,7 @@ private struct DiaryEntryEditorView: View {
         if let errorMessage {
           Section {
             Text(errorMessage)
-              .font(.regular(size: 14))
+              .font(.metadata)
               .foregroundStyle(.red)
           }
           .listRowBackground(Color("Surface"))
@@ -463,7 +463,7 @@ private struct DiaryEntryMetadataRow: View {
     HStack(spacing: 8) {
       if let mood = entry.mood {
         Text(mood.label)
-          .font(.regular(size: 14))
+          .font(.metadata)
           .padding(.horizontal, 8)
           .padding(.vertical, 4)
           .background(Color("SageBackground"), in: Capsule())
@@ -472,7 +472,7 @@ private struct DiaryEntryMetadataRow: View {
 
       ForEach(entry.tags, id: \.self) { tag in
         Text("#\(tag)")
-          .font(.regular(size: 14))
+          .font(.metadata)
           .foregroundStyle(Color("PlumForeground"))
       }
     }

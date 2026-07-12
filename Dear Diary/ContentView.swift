@@ -30,7 +30,7 @@ struct ViewWithBackdrop<Content: View>: View {
     }
     // Handwritten body is the app default; SF only appears where a view
     // explicitly opts into .system.
-    .font(.regular)
+    .font(.body)
   }
 }
 
@@ -88,7 +88,7 @@ struct ContentView: View {
 
   private func syncBannerLabel(_ text: String) -> some View {
     Text(text)
-      .font(.regular(size: 14))
+      .font(.metadata)
       .foregroundStyle(Color("RomanceForeground"))
       .padding(.horizontal, 16)
       .padding(.vertical, 8)

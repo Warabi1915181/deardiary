@@ -12,7 +12,7 @@ struct SettingsMenuView: View {
   var body: some View {
     VStack(spacing: 16) {
       Text("Settings")
-        .font(.regularItalic(size: 48))
+        .font(.screenTitle)
       List {
         Section(header: Text("General")) {
           NavigationLink(destination: DatingSettingsView()) {
@@ -29,7 +29,6 @@ struct SettingsMenuView: View {
           }
         }
         .listRowBackground(Color("Surface"))
-
       }
       .listStyle(.insetGrouped)
       .scrollContentBackground(.hidden)
@@ -54,7 +53,7 @@ private struct LightModeDoubleListShadow: ViewModifier {
 }
 
 #Preview {
-	ViewWithBackdrop {
-		SettingsMenuView()
-	}
+  ViewWithBackdrop {
+    SettingsMenuView()
+  }
 }

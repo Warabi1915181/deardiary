@@ -33,8 +33,8 @@ final class ShareAcceptanceCoordinator {
 /// the system calls these scene methods — NOT the app delegate equivalents.
 final class SceneDelegate: NSObject, UIWindowSceneDelegate {
   func scene(
-    _ scene: UIScene,
-    willConnectTo session: UISceneSession,
+    _: UIScene,
+    willConnectTo _: UISceneSession,
     options connectionOptions: UIScene.ConnectionOptions
   ) {
     // Cold launch triggered by accepting an invite.
@@ -44,7 +44,7 @@ final class SceneDelegate: NSObject, UIWindowSceneDelegate {
   }
 
   func windowScene(
-    _ windowScene: UIWindowScene,
+    _: UIWindowScene,
     userDidAcceptCloudKitShareWith cloudKitShareMetadata: CKShare.Metadata
   ) {
     // App already running when the invite is accepted.
@@ -54,9 +54,9 @@ final class SceneDelegate: NSObject, UIWindowSceneDelegate {
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
   func application(
-    _ application: UIApplication,
+    _: UIApplication,
     configurationForConnecting connectingSceneSession: UISceneSession,
-    options: UIScene.ConnectionOptions
+    options _: UIScene.ConnectionOptions
   ) -> UISceneConfiguration {
     let configuration = UISceneConfiguration(
       name: nil,
@@ -86,7 +86,7 @@ struct Dear_DiaryApp: App {
     WindowGroup {
       ContentView()
         .environment(environment)
-        .font(.regular)
+        .font(.body)
         .task {
           configureShareAcceptanceHandler()
         }

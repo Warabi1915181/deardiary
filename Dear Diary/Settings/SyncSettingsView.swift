@@ -20,7 +20,7 @@ struct SyncSettingsView: View {
         }
 
         Text(syncCoordinator.accountAvailability.message)
-          .font(.regular(size: 14))
+          .font(.metadata)
           .foregroundStyle(Color("PlumForeground"))
 
         Button {
@@ -45,7 +45,7 @@ struct SyncSettingsView: View {
         }
 
         Text(syncCoordinator.partnerSyncStatus.message)
-          .font(.regular(size: 14))
+          .font(.metadata)
           .foregroundStyle(Color("PlumForeground"))
 
         if !environment.coupleSpaceStore.isSynced {
@@ -69,7 +69,7 @@ struct SyncSettingsView: View {
 
         if let actionErrorMessage {
           Text(actionErrorMessage)
-            .font(.regular(size: 14))
+            .font(.metadata)
             .foregroundStyle(.red)
         }
       }
@@ -77,7 +77,7 @@ struct SyncSettingsView: View {
 
       Section("Privacy") {
         Text("Your data syncs through iCloud.")
-          .font(.regular(size: 14))
+          .font(.metadata)
           .foregroundStyle(Color("PlumForeground"))
       }
       .listRowBackground(Color("Surface"))

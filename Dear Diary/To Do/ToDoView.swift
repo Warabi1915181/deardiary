@@ -38,7 +38,7 @@ struct ToDoView: View {
     ScrollView {
       VStack(alignment: .leading, spacing: 16) {
         Text("Our List")
-          .font(.regularItalic(size: 48))
+          .font(.screenTitle)
           .foregroundStyle(Color("RomanceForeground"))
 
         Picker("Status", selection: $selectedSegment) {
@@ -70,7 +70,6 @@ struct ToDoView: View {
           Image(systemName: "plus.circle.fill")
             .font(.system(size: 24))
             .foregroundStyle(Color("RomanceForeground"))
-       
         }
       }
     }
@@ -112,7 +111,7 @@ struct ToDoView: View {
           VStack(spacing: 8) {
             if items.isEmpty {
               Text(selectedSegment == .active ? "No active items in this category." : "No completed items in this category.")
-                .font(.regular(size: 14))
+                .font(.metadata)
                 .foregroundStyle(Color("PlumForeground"))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 12)
@@ -174,10 +173,10 @@ struct ToDoView: View {
         .font(.system(size: 36))
         .foregroundStyle(Color("PlumForeground"))
       Text(selectedSegment == .active ? "No active items yet." : "No completed items yet.")
-        .font(.regular(size: 18))
+        .font(.bodyEmphasis)
         .foregroundStyle(Color("PlumForeground"))
       Text("Tap + to add an item or category.")
-        .font(.regular(size: 16))
+        .font(.body)
         .foregroundStyle(Color("PlumForeground"))
     }
     .frame(maxWidth: .infinity)
@@ -223,7 +222,7 @@ private struct ToDoCategoryHeader: View {
   var body: some View {
     HStack(spacing: 8) {
       Text(category.name)
-        .font(.regular(size: 20))
+        .font(.sectionHeader)
         .foregroundStyle(Color("RomanceForeground"))
 
       Spacer()
@@ -261,12 +260,12 @@ private struct ToDoItemRow: View {
 
       VStack(alignment: .leading, spacing: 4) {
         Text(item.title)
-          .font(.regular(size: 17))
+          .font(.body)
           .foregroundStyle(Color("RomanceForeground"))
           .strikethrough(status == .completed)
         if !item.details.isEmpty {
           Text(item.details)
-            .font(.regular(size: 14))
+            .font(.metadata)
             .foregroundStyle(Color("PlumForeground"))
             .lineLimit(2)
         }
@@ -297,7 +296,6 @@ private struct ToDoItemRow: View {
   }
 }
 
-
 private struct NewToDoSheet: View {
   @Environment(\.dismiss) private var dismiss
   var store: ToDoStore
@@ -311,9 +309,9 @@ private struct NewToDoSheet: View {
     NavigationStack {
       Form {
         TextField("Item title", text: $title)
-          .font(.regular())
+          .font(.body)
         TextField("Details (optional)", text: $details)
-          .font(.regular())
+          .font(.body)
         Picker("Category", selection: $selectedCategoryID) {
           ForEach(store.categories) { category in
             Text(category.name).tag(category.id)
@@ -361,7 +359,7 @@ private struct NewCategorySheet: View {
     NavigationStack {
       Form {
         TextField("Category name", text: $categoryName)
-          .font(.regular())
+          .font(.body)
       }
       .navigationTitle("New Category")
       .toolbar {
@@ -405,7 +403,7 @@ private struct RenameCategorySheet: View {
     NavigationStack {
       Form {
         TextField("Category name", text: $categoryName)
-          .font(.regular())
+          .font(.body)
       }
       .navigationTitle("Rename Category")
       .toolbar {
@@ -439,7 +437,7 @@ private struct ToDoItemDropDelegate: DropDelegate {
   let store: ToDoStore
   @Binding var draggingItemID: UUID?
 
-  func performDrop(info: DropInfo) -> Bool {
+  func performDrop(info _: DropInfo) -> Bool {
     guard let draggingItemID, draggingItemID != destinationItemID else { return false }
     withAnimation(.easeInOut(duration: 0.2)) {
       store.moveItem(
@@ -460,7 +458,7 @@ private struct ToDoCategoryDropDelegate: DropDelegate {
   let store: ToDoStore
   @Binding var draggingItemID: UUID?
 
-  func performDrop(info: DropInfo) -> Bool {
+  func performDrop(info _: DropInfo) -> Bool {
     guard let draggingItemID else { return false }
     withAnimation(.easeInOut(duration: 0.2)) {
       store.moveItem(

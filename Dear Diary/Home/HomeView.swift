@@ -8,7 +8,7 @@ struct AnniversaryCard: View {
   var numberOfDays: Int
 
   private var headingFont: Font {
-    .bold(size: dynamicTypeSize.isAccessibilitySize ? 14 : 20)
+    dynamicTypeSize.isAccessibilitySize ? .cardTitleCompact : .cardTitle
   }
 
   var body: some View {
@@ -30,11 +30,12 @@ struct AnniversaryCard: View {
             .allowsTightening(true)
         }
         Text("\(numberOfDays)")
-          .font(.fancy(size: 38))
+          .font(.displayNumber)
         Text("days left")
-          .font(.regular(size: 18))
+          .font(.bodyEmphasis)
         Text(anniversaryDate.formatted(date: .abbreviated, time: .omitted))
-          .font(.regular)
+          .font(.metadata)
+          .foregroundStyle(Color("InkMuted"))
       }
       .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -47,7 +48,7 @@ struct LatestMemoryCard: View {
   let photoURL: URL?
 
   private var headingFont: Font {
-    .bold(size: dynamicTypeSize.isAccessibilitySize ? 14 : 20)
+    dynamicTypeSize.isAccessibilitySize ? .cardTitleCompact : .cardTitle
   }
 
   var body: some View {
@@ -64,12 +65,12 @@ struct LatestMemoryCard: View {
         }
 
         Text(entry.title)
-          .font(.bold(size: 22))
+          .font(.entryTitle)
           .foregroundStyle(Color("RomanceForeground"))
 
         if !entry.body.isEmpty {
           Text(entry.body)
-            .font(.regular(size: 16))
+            .font(.body)
             .foregroundStyle(Color("RomanceForeground"))
             .lineLimit(3)
         }
@@ -87,7 +88,7 @@ struct LatestMemoryCard: View {
         }
 
         Text(entry.entryDate.formatted(date: .abbreviated, time: .omitted))
-          .font(.regular(size: 14))
+          .font(.metadata)
           .foregroundStyle(Color("InkMuted"))
       }
       .frame(maxWidth: .infinity, alignment: .leading)
