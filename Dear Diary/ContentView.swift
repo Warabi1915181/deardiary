@@ -8,11 +8,24 @@
 import SwiftUI
 
 struct ViewWithBackdrop<Content: View>: View {
+  var atmosphere: BackdropAtmosphere
   @ViewBuilder var content: Content
+
+  init(
+    atmosphere: BackdropAtmosphere = .none,
+    @ViewBuilder content: () -> Content
+  ) {
+    self.atmosphere = atmosphere
+    self.content = content()
+  }
 
   var body: some View {
     ZStack {
       Color(.backdrop).ignoresSafeArea()
+      if atmosphere == .candlelightHome {
+        CandlelightAtmosphere()
+          .ignoresSafeArea()
+      }
       content
     }
     // Handwritten body is the app default; SF only appears where a view
@@ -27,7 +40,7 @@ struct ContentView: View {
   var body: some View {
     TabView {
       Tab("Home", systemImage: "house") {
-        ViewWithBackdrop {
+        ViewWithBackdrop(atmosphere: .candlelightHome) {
           HomeView()
         }
       }

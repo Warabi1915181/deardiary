@@ -51,6 +51,44 @@ What unifies them is the **warmth bridge**: every color in both scenes is warm-t
 
 Pink at full saturation vibrates on dark surfaces and fails the candlelit mood. A desaturated dusty rose would be technically workable (standard dark-mode practice), but it tells a weaker story than an ember accent that belongs to the night. Hue-swapping an accent between modes is rare for consumer brands because of brand-recognition concerns; those concerns don't apply to a private app for two people, and reading apps set precedent for warm, scene-framed night palettes. So Candlelight commits to ember.
 
+### Candlelight atmosphere
+
+Candlelight is a tiered whole-app environment, not an effect reserved for a few screens. Its atmosphere follows emotional purpose: strongest around shared memories, quiet around planning, and still around focused utility such as settings, editors, forms, and sheets.
+
+The light comes from an **Implied Flame** beyond the lower screen edge. Never place a literal candle or flame ornament inside the interface. Any embers belong to the room behind the content: keep them rare, fixed independently of scrolling, and restricted to open margins and gaps. They must never cross text, controls, photos, or card interiors.
+
+On Home, Latest Memory receives the strongest warm catch-light because it is both closest to the Implied Flame and aligned with the product's memory-first principle. The Anniversary card receives softer reflected light. When no memory exists, Anniversary temporarily becomes the focal surface.
+
+The Diary list uses one screen-fixed room atmosphere. Memory cards do not own independent flicker or glow; they remain stable while scrolling through the atmosphere. Favorite hearts may retain their small jewel glow. Stronger local illumination belongs only in memory detail.
+
+In memory detail, preserve Photo Fidelity: illuminate the backdrop or frame around a photo, never the image pixels. Do not apply warmth, flicker, vignette, distortion, or other scene treatment directly to personal photos. A photo may appear to cast subtle reflected warmth onto its surrounding surface. Text remains stable.
+
+Our List receives only a faint, fixed lower-edge light. It has no embers, row or card flicker, or candle reaction on completion. Completion remains a stable Sage interaction so planning feedback does not become gamified or blur the meaning of Ember and Sage.
+
+The Implied Flame's lower glow may extend beneath the system tab bar so navigation naturally reflects the room's warmth. Do not attach shaders, flicker, embers, or custom glow to tab controls or selection states.
+
+Utility flows use a strict atmosphere cutoff. The Settings root may retain a faint static lower warm gradient; Settings details use the static Backdrop alone. Editors, forms, sheets, confirmation dialogs, sync or error banners, and keyboard-visible states have no shader-driven motion or atmospheric glow beyond their semantic scene colors.
+
+When Reduce Motion is enabled, Candlelight becomes still: preserve its static warm light, palette, vignette, enclosure, and heart shadow, but remove flicker, embers, gradient drift, breathing glow, heat shimmer, and animated noise. Functional state feedback may use restrained reduced-motion alternatives; only decorative atmospheric movement has a hard cutoff.
+
+Flicker belongs only to the Implied Flame's lower light field, never to a full-screen color treatment. Keep the Backdrop, text, photos, navigation, and card surfaces stable; only nearby card edges may catch tiny reflected variation, with almost no visible change at the top of the screen.
+
+Do not use heat shimmer or refractive distortion. Without a visible flame there is no believable placement for it, and warping lower-edge content or navigation would resemble a rendering defect.
+
+Use a static vignette to reinforce enclosure: subtle darkening at upper corners and side edges on Home and Diary, much fainter on Our List and the Settings root, and none in details, forms, or sheets. Never animate it or darken the central reading region. The lower edge remains warm from the Implied Flame.
+
+Prototype Candlelight atmosphere on Home first. It must prove the Implied Flame, Latest Memory catch-light, Anniversary reflection, vignette, negative-space embers, tab-bar under-light, no-memory fallback, and Reduce Motion state before the treatment expands to Diary and then the quieter Our List and Settings variants.
+
+Home atmosphere sits behind readable content in this order: stable Backdrop, lower animated light field, sparse embers, static vignette, then normal content. Only Latest Memory opts into a tiny outer edge catch-light; its fill, photo, and text remain stable. The system tab bar stays above all atmospheric layers.
+
+Candlelight atmosphere follows the same system appearance that selects the scene colors; this experiment adds no separate scene setting. Switching into Candlelight gently reveals the atmosphere without a particle burst or timeline restart. Switching to Morning removes it. Under Reduce Motion, Candlelight enters its still state immediately.
+
+Perpetual ambience never outranks device health or responsiveness. Stop atmospheric timelines while inactive or backgrounded. In Low Power Mode, use the still light and remove flicker and embers. If performance degrades, remove embers first and then freeze the light; resuming must be smooth, without simulation catch-up or particle bursts.
+
+Treat the evening reference as mood direction, not a literal intensity target. Atmosphere should become apparent only after a second look: usually zero to two visible embers, no whole-screen orange haze, no neon card outlines, and only a barely stronger edge on Latest Memory. A frozen screenshot must still read clearly as Candlelight without effects carrying the scene identity.
+
+Candlelight atmosphere is passive. It does not follow touch, react to scrolling, use gyroscope or parallax input, burst on taps, attract to drags, or couple to haptics. Content interactions remain direct and predictable while the room changes slowly on its own.
+
 ## Visual Language
 
 ### Color Roles

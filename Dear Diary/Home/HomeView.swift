@@ -82,6 +82,7 @@ struct LatestMemoryCard: View {
       }
       .frame(maxWidth: .infinity, alignment: .leading)
     }
+    .candlelightCatchlight()
   }
 }
 

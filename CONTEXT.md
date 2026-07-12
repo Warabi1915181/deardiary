@@ -18,6 +18,22 @@ _Avoid_: Light mode, light theme
 The dark scene — a genuinely dark, warm-lit private room. Its own mood, never Morning dimmed.
 _Avoid_: Dark mode, dark theme
 
+**Atmospheric Hierarchy**:
+The rule that Candlelight belongs across the whole app but changes intensity with emotional purpose: strongest around shared memories, quiet around planning, and still around focused utility.
+_Avoid_: Uniform ambience, screen-specific theme
+
+**Implied Flame**:
+The unseen source of Candlelight illumination, felt rising from beyond the lower screen edge. The flame itself is never depicted in the interface.
+_Avoid_: Visible candle, flame ornament
+
+**Negative-Space Embers**:
+Rare Candlelight sparks that belong to the room behind content and appear only in open margins or gaps. They never cross readable or interactive content.
+_Avoid_: Particle overlay, card sparks
+
+**Photo Fidelity**:
+The rule that personal photos remain visually truthful in both scenes. Scene atmosphere may surround a photo but never recolor or distort it.
+_Avoid_: Candlelight photo filter, mood filter
+
 **Enclosure**:
 What "private" means visually: being inside a small warm-lit room with the door closed. Candlelight expresses privacy through cozy dimness.
 
