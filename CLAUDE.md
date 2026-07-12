@@ -4,7 +4,31 @@ This file provides guidance to AI agents when working with code in this reposito
 
 ## Verify UI in the Simulator
 
-When implementing designs or features, use the **/serve-sim** skill to run the app in an iOS Simulator and check the UI and functionality yourself (screenshots, taps, gestures, rotation). Do not consider UI work done on a successful build alone — look at the rendered result in both scenes (see Design below).
+When implementing designs or features, use the **/serve-sim** skill to drive the
+app in an iOS Simulator (taps, gestures, rotation) and confirm both that it works
+and that it looks right. Do not consider UI work done on a successful build alone —
+verify the rendered result in both scenes (see Design below).
+
+Screenshots are the one expensive part of this skill: a simulator frame Read into
+the agent's context costs ~1,500 tokens and then rides along in context on every
+following turn. serve-sim's text surface (CLI output, the `/ax` accessibility tree)
+is cheap by comparison. So spend image reads deliberately:
+
+- **Functional checks** ("did the tap land", "is the label right", "did the screen
+  change") — read the accessibility tree, not a screenshot. Filter it at the shell
+  (`curl .../ax | jq 'select(.label=="…")'`) so only the element you asked about
+  enters context.
+- **Showing the user** — `open` the frame or use the host preview pane. That renders
+  it for the human without the agent paying image tokens.
+- **Design-fidelity checks** (scene warmth, semantic colors, 4pt grid vs DESIGN.md)
+  genuinely need eyes on pixels. When you must look, grab one stable frame, not a
+  burst. If you're capturing several screens, reproducing a bug, or running a smoke
+  pass, delegate that run to a subagent so the screenshots live and die in its
+  context instead of bloating this session. Keep a vision-capable model
+  (Sonnet-class or better) for anything judging design; a cheap model (Haiku) is
+  fine for crash/smoke/"does it launch" runs only.
+
+(This is a behavioral rule — the skill's frontmatter cannot enforce it.)
 
 ## Commands
 
