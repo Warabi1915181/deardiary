@@ -55,12 +55,24 @@ private struct CandlelightCatchlight: ViewModifier {
 
   func body(content: Content) -> some View {
     content
-      .shadow(
-        color: Color("RomanceForeground")
-          .opacity(colorScheme == .dark ? 0.14 : 0),
-        radius: 18,
-        x: 0,
-        y: 10
+      .overlay(
+        // The card nearest the flame: its lower edge catches the light —
+        // a brighter rim where the paper faces the candle, not a halo.
+        // Corner radius matches Card's.
+        RoundedRectangle(cornerRadius: 20, style: .continuous)
+          .strokeBorder(
+            LinearGradient(
+              stops: [
+                .init(color: .clear, location: 0),
+                .init(color: .clear, location: 0.55),
+                .init(color: Color("RomanceForeground").opacity(0.4), location: 1),
+              ],
+              startPoint: .top,
+              endPoint: .bottom
+            ),
+            lineWidth: 1
+          )
+          .opacity(colorScheme == .dark ? 1 : 0)
       )
   }
 }
