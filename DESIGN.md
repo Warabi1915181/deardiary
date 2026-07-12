@@ -64,8 +64,8 @@ Colors are defined as **semantic roles**. Each role has one meaning and two rend
 | **Surface Muted** | Recessed wells — placeholders, control tracks, inset panels | Warm near-white | Warm dark, a step darker than Surface |
 | **Ink** | Neutral text (headings, labels without emotional weight) | Warm brown / deep plum | Warm off-white |
 | **Ink Muted** | Metadata, quiet labels | Softened warm brown | Softened warm cream |
-| **Romance Accent** | Emotional emphasis: buttons, highlights, fills | Blush pink / soft rose | **Ember** — candle-flame / sunset orange |
-| **Heart Rose** | The heart glyph only | (same as Romance Accent) | Muted dusty rose |
+| **Romance Accent** | Emotional emphasis: buttons, highlights, fills | Deep rose text/icons over blush fills | **Ember** — candle-flame / sunset orange |
+| **Heart Rose** | The heart glyph only | Bright rose | Muted dusty rose |
 | **Sage** | Done, growth | Sage green | Olive-shifted, desaturated sage |
 | **Plum** | Secondary flavor | Muted lavender | Plum-shifted, desaturated lavender |
 
@@ -374,6 +374,8 @@ Design should stay readable and usable.
 Hard rule:
 
 - **Text meets WCAG AA in both scenes**: body text at least 4.5:1 against its surface, large text at least 3:1. "Soft, low-contrast" applies to surfaces and decoration — never to text against its surface.
+
+Both scenes were audited against this rule (2026-07): every text/surface token combination passes. Softness lives in the pastel fills; text renderings are deep enough to read. Re-run the audit when any token value changes.
 
 Guidance:
 
