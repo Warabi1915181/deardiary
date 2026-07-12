@@ -7,21 +7,31 @@
 
 import SwiftUI
 
+// Handwritten typography, "drawn on paper":
+// - Patrick Hand: neat everyday handwriting — body text, labels, metadata.
+// - Caveat: looser, quicker hand — titles and emphasis.
+// - Dancing Script: flourish — big numbers and rare script accents.
+//
+// Caveat draws small for its point size; sized roles that map to it
+// scale up so call sites can keep thinking in familiar point sizes.
 extension Font {
-  static let regular = Font.custom("PlayfairDisplay-Regular", size: 16)
-  static let regularItalic = Font.custom("PlayfairDisplay-RegularItalic", size: 16)
-  static let bold = Font.custom("PlayfairDisplay-Bold", size: 16)
-  static let fancy = Font.custom("DancingScript-Regular", size: 16)
-	static func regular(size: CGFloat = 16) -> Font {
-		return Font.custom("PlayfairDisplay-Regular", size: size)
-	}
-	static func regularItalic(size: CGFloat = 16) -> Font {
-		return Font.custom("PlayfairDisplay-RegularItalic", size: size)
-	}
-	static func bold(size: CGFloat = 16) -> Font {
-		return Font.custom("PlayfairDisplay-Bold", size: size)
-	}
-	static func fancy(size: CGFloat = 16) -> Font {
-		return Font.custom("DancingScript-Regular", size: size)
-	}
+  private static let caveatScale: CGFloat = 1.2
+
+  static let regular = Font.custom("PatrickHand-Regular", size: 17)
+  static let regularItalic = Font.custom("Caveat-Medium", size: 17 * caveatScale)
+  static let bold = Font.custom("Caveat-Bold", size: 17 * caveatScale)
+  static let fancy = Font.custom("DancingScript-Regular", size: 17)
+
+  static func regular(size: CGFloat = 17) -> Font {
+    return Font.custom("PatrickHand-Regular", size: size)
+  }
+  static func regularItalic(size: CGFloat = 17) -> Font {
+    return Font.custom("Caveat-Medium", size: size * caveatScale)
+  }
+  static func bold(size: CGFloat = 17) -> Font {
+    return Font.custom("Caveat-Bold", size: size * caveatScale)
+  }
+  static func fancy(size: CGFloat = 17) -> Font {
+    return Font.custom("DancingScript-Regular", size: size)
+  }
 }

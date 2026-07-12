@@ -15,6 +15,9 @@ struct ViewWithBackdrop<Content: View>: View {
       Color(.backdrop).ignoresSafeArea()
       content
     }
+    // Handwritten body is the app default; SF only appears where a view
+    // explicitly opts into .system.
+    .font(.regular)
   }
 }
 

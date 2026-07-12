@@ -21,9 +21,10 @@ struct Card<Content: View>: View {
       .padding(.vertical, verticalPadding)
       .padding(.horizontal, horizontalPadding)
       .background(
-        RoundedRectangle(cornerRadius: 16)
+        // Paper on a desk: warm-tinted shadow, never neutral black.
+        RoundedRectangle(cornerRadius: 20, style: .continuous)
           .fill(Color("Surface"))
-          .shadow(color: Color(.sRGBLinear, white: 0, opacity: 0.05), radius: 4, x: 0, y: 2)
+          .shadow(color: Color(red: 0.45, green: 0.3, blue: 0.25).opacity(0.1), radius: 6, x: 0, y: 3)
       )
   }
 }

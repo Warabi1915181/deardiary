@@ -59,12 +59,15 @@ struct LatestMemoryCard: View {
         }
 
         if let photoURL, let image = UIImage(contentsOfFile: photoURL.path) {
-          Image(uiImage: image)
-            .resizable()
-            .scaledToFill()
-            .frame(maxWidth: .infinity)
-            .frame(height: 160)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+          TapedPhoto {
+            Image(uiImage: image)
+              .resizable()
+              .scaledToFill()
+              .frame(maxWidth: .infinity)
+              .frame(height: 160)
+              .clipShape(RoundedRectangle(cornerRadius: 4))
+          }
+          .padding(.top, 8)
         }
 
         Text(entry.entryDate.formatted(date: .abbreviated, time: .omitted))

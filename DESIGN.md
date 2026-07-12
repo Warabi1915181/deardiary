@@ -126,24 +126,43 @@ Use cards for:
 
 ### Typography
 
-Current typography fits the app well:
+The app is **handwritten on paper** (adopted 2026-07 from the scrapbook reference direction). Three hands, each with one job:
 
-- `PlayfairDisplay` for elegant titles and readable body text.
-- `DancingScript` for emotional accents, large numbers, and special dates.
+- `PatrickHand` — neat everyday handwriting. Body text, labels, metadata. The app-wide default font.
+- `Caveat` — a quicker, looser hand. Titles, page headers, emphasis.
+- `DancingScript` — flourish. Big numbers and rare script accents only.
+
+`PlayfairDisplay` is retired from the UI (files kept in repo for now).
 
 Guidance:
 
-- Use script font sparingly.
-- Keep body text readable.
-- Use large romantic titles on emotional screens.
-- Use smaller, calmer labels for metadata.
+- All UI text is handwritten; SF appears only where a view explicitly opts into `.system` (and in system chrome like the tab bar).
+- Caveat draws small for its point size; the font roles in `Font_Extension.swift` scale it up (~1.2×) so call sites keep familiar point sizes. Go through the roles, never `Font.custom` directly.
+- Patrick Hand has a single weight — create emphasis with size, color, or a switch to Caveat, not with `fontWeight`.
+- Keep body text readable: Patrick Hand at 14+ only; never DancingScript for body or important metadata.
+- Use large handwritten titles on emotional screens; smaller, calmer labels for metadata.
 
 Examples:
 
-- Big title: `Our Anniversary`
-- Script accent: `423`
-- Metadata: `May 13, 2026`
-- Body: diary entry text
+- Page title / card title: Caveat (`Our Anniversary`, `Beach sunset walk`)
+- Script accent: DancingScript (`423`)
+- Metadata: Patrick Hand (`May 13, 2026`)
+- Body: Patrick Hand (diary entry text)
+
+### Handmade cues
+
+The scrapbook feel comes from a few physical cues, used with restraint:
+
+- **Taped photos.** Photos sit in a `TapedPhoto` frame: thin paper border, ~1° of rotation, one strip of `WashiTape` on the top edge. Like a snapshot taped into the book.
+- **Warm shadows.** Shadows are warm brown, never neutral black — paper on a wooden desk, not a floating UI panel.
+- **One cue per card, at most.** Tape, rotation, and doodles are seasoning. A card earns a cue when it holds a memory; utility cards (settings, sync, forms) get none.
+
+Rejected from the reference mock (they violate "not overly cute" / readability):
+
+- Mascots and character stickers
+- Scattered sparkle/heart confetti as screen decoration
+- Emoji inside body copy by default
+- Decorating utility screens
 
 ### Icons
 
