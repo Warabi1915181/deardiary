@@ -13,11 +13,11 @@ struct PartnerMergePromptView: View {
       VStack(spacing: 12) {
         Text("Merge Your Local Diary?")
           .font(.bold(size: 24))
-          .foregroundStyle(Color("PrimaryForeground"))
+          .foregroundStyle(Color("RomanceForeground"))
 
         Text("This device already has diary entries and list items. You can merge them into your shared diary or keep them on this device only.")
           .font(.regular(size: 16))
-          .foregroundStyle(Color("SecondaryForeground"))
+          .foregroundStyle(Color("PlumForeground"))
           .multilineTextAlignment(.center)
       }
 

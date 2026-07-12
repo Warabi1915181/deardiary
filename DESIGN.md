@@ -61,6 +61,7 @@ Colors are defined as **semantic roles**. Each role has one meaning and two rend
 |---|---|---|---|
 | **Backdrop** | The room — outermost screen background | Warm cream | Deep warm dark (never pure black, never gray) |
 | **Surface** | The paper — cards, sheets, popovers | Warm off-white | Warm dark, a step lighter than Backdrop |
+| **Surface Muted** | Recessed wells — placeholders, control tracks, inset panels | Warm near-white | Warm dark, a step darker than Surface |
 | **Ink** | Neutral text (headings, labels without emotional weight) | Warm brown / deep plum | Warm off-white |
 | **Ink Muted** | Metadata, quiet labels | Softened warm brown | Softened warm cream |
 | **Romance Accent** | Emotional emphasis: buttons, highlights, fills | Blush pink / soft rose | **Ember** — candle-flame / sunset orange |
@@ -91,9 +92,10 @@ Exact color values are decided in dedicated design sessions, not in this documen
 
 Candlelight draft values are in place for all tokens (first iteration — values still being tuned in design sessions). `Surface` and `HeartRose` exist as assets; `Card` fills with `Surface`; the tab view tints with the Romance Accent explicitly.
 
+Asset names now match the role vocabulary (`RomanceForeground`/`RomanceBackground`, `PlumForeground`/`PlumBackground`, `SurfaceMuted`, `Surface`, `HeartRose`, `Backdrop`, Sage pair). `AccentColor` keeps its build-mandated name and mirrors `RomanceForeground`.
+
 Remaining:
 
-- Existing asset names (`PrimaryBackground` = the accent fill, etc.) should be renamed to the role vocabulary above.
 - Morning's Sage renderings are brighter than "sage" implies; revisit when tuning Morning.
 - System-styled controls must be checked in both scenes whenever one is added; SwiftUI's default accent fallback is corporate blue (a violation) — tint explicitly with roles.
 

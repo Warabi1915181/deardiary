@@ -21,7 +21,7 @@ struct SyncSettingsView: View {
 
         Text(syncCoordinator.accountAvailability.message)
           .font(.regular(size: 14))
-          .foregroundStyle(Color("SecondaryForeground"))
+          .foregroundStyle(Color("PlumForeground"))
 
         Button {
           Task {
@@ -46,7 +46,7 @@ struct SyncSettingsView: View {
 
         Text(syncCoordinator.partnerSyncStatus.message)
           .font(.regular(size: 14))
-          .foregroundStyle(Color("SecondaryForeground"))
+          .foregroundStyle(Color("PlumForeground"))
 
         if !environment.coupleSpaceStore.isSynced {
           Button("Invite Partner") {
@@ -78,7 +78,7 @@ struct SyncSettingsView: View {
       Section("Privacy") {
         Text("Your data syncs through iCloud.")
           .font(.regular(size: 14))
-          .foregroundStyle(Color("SecondaryForeground"))
+          .foregroundStyle(Color("PlumForeground"))
       }
       .listRowBackground(Color("Surface"))
     }
@@ -131,7 +131,7 @@ struct SyncSettingsView: View {
   private var iCloudStatusColor: Color {
     syncCoordinator.accountAvailability.isAvailable
       ? Color("SageForeground")
-      : Color("SecondaryForeground")
+      : Color("PlumForeground")
   }
 
   private var partnerSyncColor: Color {
@@ -139,7 +139,7 @@ struct SyncSettingsView: View {
     case .syncFailed:
       return .red
     case .notSynced:
-      return Color("SecondaryForeground")
+      return Color("PlumForeground")
     default:
       return Color("SageForeground")
     }

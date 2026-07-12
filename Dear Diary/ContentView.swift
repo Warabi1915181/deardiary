@@ -50,7 +50,7 @@ struct ContentView: View {
         }
       }
     }
-    .tint(Color("PrimaryForeground"))
+    .tint(Color("RomanceForeground"))
     .overlay(alignment: .top) {
       syncBanner
     }
@@ -73,12 +73,12 @@ struct ContentView: View {
   private func syncBannerLabel(_ text: String) -> some View {
     Text(text)
       .font(.regular(size: 14))
-      .foregroundStyle(Color("PrimaryForeground"))
+      .foregroundStyle(Color("RomanceForeground"))
       .padding(.horizontal, 16)
       .padding(.vertical, 8)
       .background(
         Capsule()
-          .fill(Color("PrimaryBackground"))
+          .fill(Color("RomanceBackground"))
       )
       .padding(.top, 8)
   }

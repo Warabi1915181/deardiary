@@ -43,6 +43,10 @@ The room — the outermost background a screen sits on.
 The paper — the fill of cards, sheets, and popovers. In Candlelight, higher surfaces are a step lighter, as if catching the glow.
 _Avoid_: Card color, white
 
+**Surface Muted**:
+A recessed variant of Surface for wells: photo placeholders, control tracks, inset panels.
+_Avoid_: Muted
+
 **Ink**:
 Primary text color.
 

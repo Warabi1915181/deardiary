@@ -74,10 +74,10 @@ struct Dear_DiaryApp: App {
 
   init() {
     let segmented = UISegmentedControl.appearance()
-    segmented.backgroundColor = UIColor(named: "Muted")
-    segmented.selectedSegmentTintColor = UIColor(named: "PrimaryBackground")
+    segmented.backgroundColor = UIColor(named: "SurfaceMuted")
+    segmented.selectedSegmentTintColor = UIColor(named: "RomanceBackground")
     segmented.setTitleTextAttributes(
-      [.foregroundColor: UIColor(named: "PrimaryForeground") ?? .label],
+      [.foregroundColor: UIColor(named: "RomanceForeground") ?? .label],
       for: .selected
     )
   }

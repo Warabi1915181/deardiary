@@ -19,7 +19,7 @@ struct DiaryView: View {
       VStack(alignment: .leading, spacing: 16) {
         Text("Diary")
           .font(.regularItalic(size: 48))
-          .foregroundStyle(Color("PrimaryForeground"))
+          .foregroundStyle(Color("RomanceForeground"))
 
         searchControls
 
@@ -55,7 +55,7 @@ struct DiaryView: View {
         } label: {
           Image(systemName: "plus.circle.fill")
             .font(.system(size: 24))
-            .foregroundStyle(Color("PrimaryForeground"))
+            .foregroundStyle(Color("RomanceForeground"))
         }
       }
     }
@@ -68,7 +68,7 @@ struct DiaryView: View {
     VStack(spacing: 12) {
       HStack(spacing: 8) {
         Image(systemName: "magnifyingglass")
-          .foregroundStyle(Color("SecondaryForeground"))
+          .foregroundStyle(Color("PlumForeground"))
         TextField("Search memories, tags, or moods", text: $searchText)
           .textInputAutocapitalization(.never)
           .autocorrectionDisabled()
@@ -77,13 +77,13 @@ struct DiaryView: View {
       .padding(12)
       .background(
         RoundedRectangle(cornerRadius: 16)
-          .fill(Color("PrimaryBackground"))
+          .fill(Color("RomanceBackground"))
       )
 
       Toggle("Favorites only", isOn: $favoriteOnly)
         .font(.regular(size: 16))
         .toggleStyle(.switch)
-        .tint(Color("PrimaryForeground"))
+        .tint(Color("RomanceForeground"))
     }
   }
 
@@ -91,13 +91,13 @@ struct DiaryView: View {
     VStack(spacing: 12) {
       Image(systemName: "book.closed")
         .font(.system(size: 36))
-        .foregroundStyle(Color("SecondaryForeground"))
+        .foregroundStyle(Color("PlumForeground"))
       Text("No memories yet.")
         .font(.regular(size: 18))
-        .foregroundStyle(Color("SecondaryForeground"))
+        .foregroundStyle(Color("PlumForeground"))
       Text("Start with today.")
         .font(.regular(size: 16))
-        .foregroundStyle(Color("SecondaryForeground"))
+        .foregroundStyle(Color("PlumForeground"))
       Button("Write a Memory") {
         showingEditor = true
       }
@@ -107,7 +107,7 @@ struct DiaryView: View {
     .padding(24)
     .background(
       RoundedRectangle(cornerRadius: 16)
-        .fill(Color("PrimaryBackground"))
+        .fill(Color("RomanceBackground"))
     )
   }
 }
@@ -123,10 +123,10 @@ private struct DiaryEntryCard: View {
           VStack(alignment: .leading, spacing: 4) {
             Text(entry.entryDate.formatted(date: .abbreviated, time: .omitted))
               .font(.regular(size: 14))
-              .foregroundStyle(Color("SecondaryForeground"))
+              .foregroundStyle(Color("PlumForeground"))
             Text(entry.title)
               .font(.bold(size: 22))
-              .foregroundStyle(Color("PrimaryForeground"))
+              .foregroundStyle(Color("RomanceForeground"))
           }
           Spacer()
           if entry.isFavorite {
@@ -138,7 +138,7 @@ private struct DiaryEntryCard: View {
         if !entry.body.isEmpty {
           Text(entry.body)
             .font(.regular(size: 16))
-            .foregroundStyle(Color("PrimaryForeground"))
+            .foregroundStyle(Color("RomanceForeground"))
             .lineLimit(3)
         }
 
@@ -179,11 +179,11 @@ private struct DiaryEntryDetailView: View {
         VStack(alignment: .leading, spacing: 16) {
           Text(entry.entryDate.formatted(date: .abbreviated, time: .omitted))
             .font(.regular(size: 16))
-            .foregroundStyle(Color("SecondaryForeground"))
+            .foregroundStyle(Color("PlumForeground"))
 
           Text(entry.title)
             .font(.regularItalic(size: 40))
-            .foregroundStyle(Color("PrimaryForeground"))
+            .foregroundStyle(Color("RomanceForeground"))
 
           DiaryEntryMetadataRow(entry: entry)
 
@@ -197,14 +197,14 @@ private struct DiaryEntryDetailView: View {
 
           Text(entry.body)
             .font(.regular(size: 18))
-            .foregroundStyle(Color("PrimaryForeground"))
+            .foregroundStyle(Color("RomanceForeground"))
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(16)
       } else {
         Text("This memory is no longer available.")
           .font(.regular(size: 16))
-          .foregroundStyle(Color("SecondaryForeground"))
+          .foregroundStyle(Color("PlumForeground"))
           .padding(16)
       }
     }
@@ -330,8 +330,8 @@ private struct DiaryEntryEditorView: View {
                   } label: {
                     Image(systemName: "xmark.circle.fill")
                       .font(.system(size: 24))
-                      .foregroundStyle(Color("PrimaryForeground"))
-                      .background(Color("PrimaryBackground"), in: Circle())
+                      .foregroundStyle(Color("RomanceForeground"))
+                      .background(Color("RomanceBackground"), in: Circle())
                   }
                   .padding(8)
                 }
@@ -350,7 +350,7 @@ private struct DiaryEntryEditorView: View {
           if !selectedPhotoItems.isEmpty {
             Text("\(selectedPhotoItems.count) new photo\(selectedPhotoItems.count == 1 ? "" : "s") selected")
               .font(.regular(size: 14))
-              .foregroundStyle(Color("SecondaryForeground"))
+              .foregroundStyle(Color("PlumForeground"))
           }
         }
         .listRowBackground(Color("Surface"))
@@ -459,7 +459,7 @@ private struct DiaryEntryMetadataRow: View {
       ForEach(entry.tags, id: \.self) { tag in
         Text("#\(tag)")
           .font(.regular(size: 14))
-          .foregroundStyle(Color("SecondaryForeground"))
+          .foregroundStyle(Color("PlumForeground"))
       }
     }
   }
@@ -477,9 +477,9 @@ private struct DiaryPhotoThumbnail: View {
           .scaledToFill()
       } else {
         ZStack {
-          Color("Muted")
+          Color("SurfaceMuted")
           Image(systemName: "photo")
-            .foregroundStyle(Color("SecondaryForeground"))
+            .foregroundStyle(Color("PlumForeground"))
         }
       }
     }

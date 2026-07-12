@@ -39,7 +39,7 @@ struct ToDoView: View {
       VStack(alignment: .leading, spacing: 16) {
         Text("Our List")
           .font(.regularItalic(size: 48))
-          .foregroundStyle(Color("PrimaryForeground"))
+          .foregroundStyle(Color("RomanceForeground"))
 
         Picker("Status", selection: $selectedSegment) {
           ForEach(Segment.allCases, id: \.self) { segment in
@@ -69,7 +69,7 @@ struct ToDoView: View {
         } label: {
           Image(systemName: "plus.circle.fill")
             .font(.system(size: 24))
-            .foregroundStyle(Color("PrimaryForeground"))
+            .foregroundStyle(Color("RomanceForeground"))
        
         }
       }
@@ -113,7 +113,7 @@ struct ToDoView: View {
             if items.isEmpty {
               Text(selectedSegment == .active ? "No active items in this category." : "No completed items in this category.")
                 .font(.regular(size: 14))
-                .foregroundStyle(Color("SecondaryForeground"))
+                .foregroundStyle(Color("PlumForeground"))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
@@ -152,7 +152,7 @@ struct ToDoView: View {
           .padding(12)
           .background(
             RoundedRectangle(cornerRadius: 12)
-              .fill(Color("PrimaryBackground"))
+              .fill(Color("RomanceBackground"))
           )
           .onDrop(
             of: [UTType.text],
@@ -172,19 +172,19 @@ struct ToDoView: View {
     VStack(spacing: 12) {
       Image(systemName: selectedSegment == .active ? "checklist" : "checkmark.circle")
         .font(.system(size: 36))
-        .foregroundStyle(Color("SecondaryForeground"))
+        .foregroundStyle(Color("PlumForeground"))
       Text(selectedSegment == .active ? "No active items yet." : "No completed items yet.")
         .font(.regular(size: 18))
-        .foregroundStyle(Color("SecondaryForeground"))
+        .foregroundStyle(Color("PlumForeground"))
       Text("Tap + to add an item or category.")
         .font(.regular(size: 16))
-        .foregroundStyle(Color("SecondaryForeground"))
+        .foregroundStyle(Color("PlumForeground"))
     }
     .frame(maxWidth: .infinity)
     .padding(24)
     .background(
       RoundedRectangle(cornerRadius: 12)
-        .fill(Color("PrimaryBackground"))
+        .fill(Color("RomanceBackground"))
     )
   }
 
@@ -224,7 +224,7 @@ private struct ToDoCategoryHeader: View {
     HStack(spacing: 8) {
       Text(category.name)
         .font(.regular(size: 20))
-        .foregroundStyle(Color("PrimaryForeground"))
+        .foregroundStyle(Color("RomanceForeground"))
 
       Spacer()
 
@@ -235,7 +235,7 @@ private struct ToDoCategoryHeader: View {
         } label: {
           Image(systemName: "ellipsis.circle")
             .font(.system(size: 18))
-            .foregroundStyle(Color("SecondaryForeground"))
+            .foregroundStyle(Color("PlumForeground"))
         }
       }
     }
@@ -254,7 +254,7 @@ private struct ToDoItemRow: View {
       Button(action: onToggleComplete) {
         Image(systemName: iconName)
           .font(.system(size: 20))
-          .foregroundStyle(item.status == .active ? Color("SageForeground") : Color("SecondaryForeground"))
+          .foregroundStyle(item.status == .active ? Color("SageForeground") : Color("PlumForeground"))
           .contentTransition(.symbolEffect(.replace))
       }
       .buttonStyle(.plain)
@@ -262,12 +262,12 @@ private struct ToDoItemRow: View {
       VStack(alignment: .leading, spacing: 4) {
         Text(item.title)
           .font(.regular(size: 17))
-          .foregroundStyle(Color("PrimaryForeground"))
+          .foregroundStyle(Color("RomanceForeground"))
           .strikethrough(status == .completed)
         if !item.details.isEmpty {
           Text(item.details)
             .font(.regular(size: 14))
-            .foregroundStyle(Color("SecondaryForeground"))
+            .foregroundStyle(Color("PlumForeground"))
             .lineLimit(2)
         }
       }
@@ -279,13 +279,13 @@ private struct ToDoItemRow: View {
           .font(.system(size: 16))
       }
       .buttonStyle(.plain)
-      .foregroundStyle(Color("SecondaryForeground"))
+      .foregroundStyle(Color("PlumForeground"))
     }
     .padding(.horizontal, 12)
     .padding(.vertical, 12)
     .background(
       RoundedRectangle(cornerRadius: 12)
-        .fill(Color("Muted"))
+        .fill(Color("SurfaceMuted"))
     )
   }
 

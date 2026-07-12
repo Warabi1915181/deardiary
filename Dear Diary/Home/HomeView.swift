@@ -42,19 +42,19 @@ struct LatestMemoryCard: View {
       VStack(alignment: .leading, spacing: 12) {
         HStack(spacing: 4) {
           Image(systemName: "book.closed")
-            .foregroundStyle(Color("PrimaryForeground"))
+            .foregroundStyle(Color("RomanceForeground"))
           Text("Latest Memory")
             .fontWeight(.semibold)
         }
 
         Text(entry.title)
           .font(.bold(size: 22))
-          .foregroundStyle(Color("PrimaryForeground"))
+          .foregroundStyle(Color("RomanceForeground"))
 
         if !entry.body.isEmpty {
           Text(entry.body)
             .font(.regular(size: 16))
-            .foregroundStyle(Color("PrimaryForeground"))
+            .foregroundStyle(Color("RomanceForeground"))
             .lineLimit(3)
         }
 
@@ -69,7 +69,7 @@ struct LatestMemoryCard: View {
 
         Text(entry.entryDate.formatted(date: .abbreviated, time: .omitted))
           .font(.regular(size: 14))
-          .foregroundStyle(Color("SecondaryForeground"))
+          .foregroundStyle(Color("PlumForeground"))
       }
       .frame(maxWidth: .infinity, alignment: .leading)
     }
