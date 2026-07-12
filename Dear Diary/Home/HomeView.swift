@@ -88,7 +88,7 @@ struct LatestMemoryCard: View {
 
         Text(entry.entryDate.formatted(date: .abbreviated, time: .omitted))
           .font(.regular(size: 14))
-          .foregroundStyle(Color("PlumForeground"))
+          .foregroundStyle(Color("InkMuted"))
       }
       .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -131,6 +131,9 @@ struct HomeView: View {
     ScrollView {
       VStack(spacing: 16) {
         AnniversaryCard(anniversaryDate: anniversaryDate, numberOfDays: daysUntilAnniversary)
+          // No memory yet: Anniversary becomes the focal surface and
+          // catches the flame in Latest Memory's place.
+          .candlelightCatchlight(environment.diaryStore.latestEntry == nil)
         if let latestEntry = environment.diaryStore.latestEntry {
           LatestMemoryCard(
             entry: latestEntry,

@@ -15,7 +15,7 @@ struct WashiTape: View {
           ? Color("RomanceForeground").opacity(0.32)
           : Color("RomanceBackground").opacity(0.85)
       )
-      .frame(width: 72, height: 22)
+      .frame(width: 72, height: 20)
       .overlay(
         Rectangle()
           .stroke(Color("RomanceForeground").opacity(colorScheme == .dark ? 0.35 : 0.12), lineWidth: 1)
@@ -38,7 +38,7 @@ struct TapedPhoto<Content: View>: View {
 
   var body: some View {
     content
-      .padding(6)
+      .padding(8)
       .background(Color("Surface"))
       .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
       .shadow(color: Color("WarmShadow").opacity(0.18), radius: 4, x: 0, y: 2)

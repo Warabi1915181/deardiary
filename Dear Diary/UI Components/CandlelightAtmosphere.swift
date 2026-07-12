@@ -52,6 +52,7 @@ struct CandlelightAtmosphere: View {
 
 private struct CandlelightCatchlight: ViewModifier {
   @Environment(\.colorScheme) private var colorScheme
+  var isActive: Bool
 
   func body(content: Content) -> some View {
     content
@@ -65,21 +66,21 @@ private struct CandlelightCatchlight: ViewModifier {
               stops: [
                 .init(color: .clear, location: 0),
                 .init(color: .clear, location: 0.55),
-                .init(color: Color("RomanceForeground").opacity(0.4), location: 1),
+                .init(color: Color("RomanceForeground").opacity(0.3), location: 1),
               ],
               startPoint: .top,
               endPoint: .bottom
             ),
             lineWidth: 1
           )
-          .opacity(colorScheme == .dark ? 1 : 0)
+          .opacity(colorScheme == .dark && isActive ? 1 : 0)
       )
   }
 }
 
 extension View {
-  func candlelightCatchlight() -> some View {
-    modifier(CandlelightCatchlight())
+  func candlelightCatchlight(_ isActive: Bool = true) -> some View {
+    modifier(CandlelightCatchlight(isActive: isActive))
   }
 }
 
