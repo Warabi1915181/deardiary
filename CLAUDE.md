@@ -2,6 +2,13 @@
 
 This file provides guidance to AI agents when working with code in this repository.
 
+## Solo project workflow
+
+This is a solo project (one dev, no reviewers). Work directly on `main` —
+no feature branches, no worktrees, no PRs. Exception: spin up a worktree
+only when running multiple agents in parallel that need isolated working
+trees.
+
 ## Verify UI in the Simulator
 
 When implementing designs or features, use the **/serve-sim** skill to drive the
