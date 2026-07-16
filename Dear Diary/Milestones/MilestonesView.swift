@@ -9,11 +9,14 @@ private let milestoneIconOptions = [
 
 struct MilestonesView: View {
   var store: MilestoneStore
+  var diaryStore: DiaryStore
   @State private var showingEditor = false
   @State private var editingMilestone: Milestone?
+  @State private var bridgingMilestone: Milestone?
 
-  init(store: MilestoneStore) {
+  init(store: MilestoneStore, diaryStore: DiaryStore) {
     self.store = store
+    self.diaryStore = diaryStore
   }
 
   var body: some View {
@@ -30,6 +33,31 @@ struct MilestonesView: View {
       .sheet(item: $editingMilestone) { milestone in
         MilestoneEditorView(store: store, milestone: milestone)
       }
+      .sheet(item: $bridgingMilestone) { milestone in
+        memoryBridgeEditor(for: milestone)
+      }
+  }
+
+  /// The memory bridge: a passed milestone opens a diary entry — either the one
+  /// already linked to it, or a fresh entry prefilled with the milestone's title
+  /// that links back on save.
+  @ViewBuilder
+  private func memoryBridgeEditor(for milestone: Milestone) -> some View {
+    if
+      let entryID = milestone.linkedDiaryEntryID,
+      let entry = diaryStore.entryRecord(id: entryID)
+    {
+      DiaryEntryEditorView(store: diaryStore, entry: entry)
+    } else {
+      DiaryEntryEditorView(
+        store: diaryStore,
+        prefillTitle: milestone.title,
+        prefillDate: Date(),
+        onSaved: { newEntryID in
+          _ = store.setLinkedDiaryEntryID(milestone.id, entryID: newEntryID)
+        }
+      )
+    }
   }
 
   @ViewBuilder
@@ -56,12 +84,13 @@ struct MilestonesView: View {
   }
 
   private func milestoneRow(for milestone: Milestone) -> some View {
-    Button {
-      editingMilestone = milestone
-    } label: {
-      MilestoneRow(milestone: milestone, store: store)
-    }
-    .buttonStyle(.plain)
+    MilestoneRow(
+      milestone: milestone,
+      store: store,
+      hasLinkedMemory: linkedEntryExists(for: milestone),
+      onEdit: { editingMilestone = milestone },
+      onWriteMemory: { bridgingMilestone = milestone }
+    )
     .listRowBackground(Color.clear as Color)
     .listRowSeparator(.hidden)
     .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
@@ -74,6 +103,11 @@ struct MilestonesView: View {
         Label("Delete", systemImage: "trash")
       }
     }
+  }
+
+  private func linkedEntryExists(for milestone: Milestone) -> Bool {
+    guard let entryID = milestone.linkedDiaryEntryID else { return false }
+    return diaryStore.entryRecord(id: entryID) != nil
   }
 
   @ToolbarContentBuilder
@@ -119,6 +153,9 @@ struct MilestonesView: View {
 private struct MilestoneRow: View {
   let milestone: Milestone
   let store: MilestoneStore
+  let hasLinkedMemory: Bool
+  let onEdit: () -> Void
+  let onWriteMemory: () -> Void
 
   private var isYearly: Bool { milestone.recurrence == .yearly }
 
@@ -130,49 +167,78 @@ private struct MilestoneRow: View {
     milestone.icon.hasPrefix("heart")
   }
 
+  /// The moment has happened at least once (anchor date today or earlier), so we
+  /// offer to capture it as a diary memory.
+  private var isPassed: Bool {
+    let calendar = Calendar.current
+    return calendar.startOfDay(for: milestone.date) <= calendar.startOfDay(for: Date())
+  }
+
   var body: some View {
     Card(verticalPadding: 16) {
-      HStack(alignment: .top, spacing: 12) {
-        ZStack {
-          Circle()
-            .fill(Color("RomanceBackground"))
-            .frame(width: 40, height: 40)
-          Image(systemName: milestone.icon)
-            .font(.system(size: 18))
-            // Heart glyphs keep the Heart Rose jewel color; every other
-            // milestone icon rides the Romance Accent like the rest of the app.
-            .foregroundStyle(isHeart ? Color("HeartRose") : Color("RomanceForeground"))
-        }
+      VStack(alignment: .leading, spacing: 12) {
+        HStack(alignment: .top, spacing: 12) {
+          ZStack {
+            Circle()
+              .fill(Color("RomanceBackground"))
+              .frame(width: 40, height: 40)
+            Image(systemName: milestone.icon)
+              .font(.system(size: 18))
+              // Heart glyphs keep the Heart Rose jewel color; every other
+              // milestone icon rides the Romance Accent like the rest of the app.
+              .foregroundStyle(isHeart ? Color("HeartRose") : Color("RomanceForeground"))
+          }
 
-        VStack(alignment: .leading, spacing: 4) {
-          HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(milestone.title)
-              .font(.cardTitle)
-              .foregroundStyle(Color("RomanceForeground"))
-            if isYearly {
-              Text(MilestoneRecurrence.yearly.label)
-                .font(.metadata)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color("PlumBackground"), in: Capsule())
-                .foregroundStyle(Color("PlumForeground"))
+          VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+              Text(milestone.title)
+                .font(.cardTitle)
+                .foregroundStyle(Color("RomanceForeground"))
+              if isYearly {
+                Text(MilestoneRecurrence.yearly.label)
+                  .font(.metadata)
+                  .padding(.horizontal, 8)
+                  .padding(.vertical, 4)
+                  .background(Color("PlumBackground"), in: Capsule())
+                  .foregroundStyle(Color("PlumForeground"))
+              }
+            }
+
+            Text(dateLine)
+              .font(.metadata)
+              .foregroundStyle(Color("InkMuted"))
+
+            if !milestone.note.isEmpty {
+              Text(milestone.note)
+                .font(.body)
+                .foregroundStyle(Color("RomanceForeground"))
+                .lineLimit(2)
             }
           }
+        }
 
-          Text(dateLine)
-            .font(.metadata)
-            .foregroundStyle(Color("InkMuted"))
-
-          if !milestone.note.isEmpty {
-            Text(milestone.note)
-              .font(.body)
-              .foregroundStyle(Color("RomanceForeground"))
-              .lineLimit(2)
-          }
+        if isPassed {
+          memoryBridge
+            // Line the action up under the text column (40pt icon + 12pt gap).
+            .padding(.leading, 52)
         }
       }
       .frame(maxWidth: .infinity, alignment: .leading)
     }
+    .contentShape(Rectangle())
+    .onTapGesture { onEdit() }
+  }
+
+  private var memoryBridge: some View {
+    Button(action: onWriteMemory) {
+      Label(
+        hasLinkedMemory ? "View memory" : "Write today down",
+        systemImage: hasLinkedMemory ? "book.closed" : "square.and.pencil"
+      )
+      .font(.metadata)
+      .foregroundStyle(Color("RomanceForeground"))
+    }
+    .buttonStyle(.plain)
   }
 
   private var dateLine: String {
@@ -333,6 +399,6 @@ struct MilestoneEditorView: View {
 
 #Preview {
   NavigationStack {
-    MilestonesView(store: MilestoneStore())
+    MilestonesView(store: MilestoneStore(), diaryStore: DiaryStore())
   }
 }

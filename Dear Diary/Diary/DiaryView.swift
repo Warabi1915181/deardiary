@@ -250,7 +250,7 @@ private struct DiaryEntryDetailView: View {
   }
 }
 
-private struct DiaryEntryEditorView: View {
+struct DiaryEntryEditorView: View {
   var store: DiaryStore
   @Environment(\.dismiss) private var dismiss
   @State private var title: String
@@ -265,6 +265,9 @@ private struct DiaryEntryEditorView: View {
   @FocusState private var focusedField: Field?
 
   private let entry: DiaryEntry?
+  /// Fires with the new entry's id after a successful create, so a caller (e.g.
+  /// the milestone memory bridge) can link the entry back to its source.
+  private let onSaved: ((UUID) -> Void)?
 
   private enum Field: Hashable {
     case title
@@ -272,12 +275,20 @@ private struct DiaryEntryEditorView: View {
     case tags
   }
 
-  init(store: DiaryStore, entry: DiaryEntry? = nil) {
+  init(
+    store: DiaryStore,
+    entry: DiaryEntry? = nil,
+    prefillTitle: String = "",
+    prefillBody: String = "",
+    prefillDate: Date? = nil,
+    onSaved: ((UUID) -> Void)? = nil
+  ) {
     self.store = store
     self.entry = entry
-    _title = State(initialValue: entry?.title ?? "")
-    _bodyText = State(initialValue: entry?.body ?? "")
-    _entryDate = State(initialValue: entry?.entryDate ?? Date())
+    self.onSaved = onSaved
+    _title = State(initialValue: entry?.title ?? prefillTitle)
+    _bodyText = State(initialValue: entry?.body ?? prefillBody)
+    _entryDate = State(initialValue: entry?.entryDate ?? prefillDate ?? Date())
     _mood = State(initialValue: entry?.mood)
     _tagsText = State(initialValue: entry?.tags.joined(separator: ", ") ?? "")
     _keptPhotos = State(initialValue: entry?.photos ?? [])
@@ -438,14 +449,16 @@ private struct DiaryEntryEditorView: View {
             newPhotoPayloads: payloads
           )
         } else {
-          _ = try store.addEntry(
+          if let newEntryID = try store.addEntry(
             title: title,
             body: bodyText,
             entryDate: entryDate,
             mood: mood,
             tags: parsedTags,
             photoPayloads: payloads
-          )
+          ) {
+            onSaved?(newEntryID)
+          }
         }
         dismiss()
       } catch {

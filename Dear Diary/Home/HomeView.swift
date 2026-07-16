@@ -244,7 +244,7 @@ struct HomeView: View {
         }
         if let candidate = nextMilestoneCandidate {
           NavigationLink {
-            MilestonesView(store: environment.milestoneStore)
+            MilestonesView(store: environment.milestoneStore, diaryStore: environment.diaryStore)
           } label: {
             NextMilestoneCard(
               icon: candidate.icon,
