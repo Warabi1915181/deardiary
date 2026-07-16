@@ -6,6 +6,7 @@ enum SyncRecordKind: String, Codable, Hashable {
   case diaryPhoto
   case toDoCategory
   case toDoItem
+  case milestone
 }
 
 struct SyncRecordReference: Hashable, Codable {
