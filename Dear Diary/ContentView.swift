@@ -49,6 +49,18 @@ struct ContentView: View {
           ViewWithBackdrop {
             DiaryView(store: environment.diaryStore)
           }
+          // TEMP: stand-in entry point for Milestones until commit 4 adds the
+          // Home "Next Milestone" card, which will replace this button.
+          .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+              NavigationLink {
+                MilestonesView(store: environment.milestoneStore)
+              } label: {
+                Image(systemName: "sparkles")
+                  .foregroundStyle(Color("RomanceForeground"))
+              }
+            }
+          }
         }
       }
       Tab("Our List", systemImage: "list.bullet") {
