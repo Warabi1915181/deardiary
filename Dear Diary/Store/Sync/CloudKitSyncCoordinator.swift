@@ -81,25 +81,30 @@ final class AppEnvironment {
   let coupleSpaceStore: CoupleSpaceStore
   let diaryStore: DiaryStore
   let toDoStore: ToDoStore
+  let milestoneStore: MilestoneStore
   let syncCoordinator: CloudKitSyncCoordinator
 
   init(
     coupleSpaceStore: CoupleSpaceStore? = nil,
     diaryStore: DiaryStore? = nil,
-    toDoStore: ToDoStore? = nil
+    toDoStore: ToDoStore? = nil,
+    milestoneStore: MilestoneStore? = nil
   ) {
     // Construct stores on the (MainActor-isolated) initializer body rather than
     // in default arguments, which evaluate in a nonisolated context.
     let coupleSpaceStore = coupleSpaceStore ?? CoupleSpaceStore()
     let diaryStore = diaryStore ?? DiaryStore()
     let toDoStore = toDoStore ?? ToDoStore()
+    let milestoneStore = milestoneStore ?? MilestoneStore()
     self.coupleSpaceStore = coupleSpaceStore
     self.diaryStore = diaryStore
     self.toDoStore = toDoStore
+    self.milestoneStore = milestoneStore
     syncCoordinator = CloudKitSyncCoordinator(
       coupleSpaceStore: coupleSpaceStore,
       diaryStore: diaryStore,
-      toDoStore: toDoStore
+      toDoStore: toDoStore,
+      milestoneStore: milestoneStore
     )
     wireStoreCallbacks()
   }
@@ -112,6 +117,9 @@ final class AppEnvironment {
       syncCoordinator?.enqueueLocalChanges(references)
     }
     toDoStore.onRecordsChanged = { [weak syncCoordinator] references in
+      syncCoordinator?.enqueueLocalChanges(references)
+    }
+    milestoneStore.onRecordsChanged = { [weak syncCoordinator] references in
       syncCoordinator?.enqueueLocalChanges(references)
     }
   }
@@ -132,6 +140,7 @@ final class CloudKitSyncCoordinator {
   @ObservationIgnored private let coupleSpaceStore: CoupleSpaceStore
   @ObservationIgnored private let diaryStore: DiaryStore
   @ObservationIgnored private let toDoStore: ToDoStore
+  @ObservationIgnored private let milestoneStore: MilestoneStore
   @ObservationIgnored private let container: CKContainer
   @ObservationIgnored private let syncStateURL: URL
   @ObservationIgnored private let fileManager: FileManager
@@ -146,12 +155,14 @@ final class CloudKitSyncCoordinator {
     coupleSpaceStore: CoupleSpaceStore,
     diaryStore: DiaryStore,
     toDoStore: ToDoStore,
+    milestoneStore: MilestoneStore,
     container: CKContainer = CKContainer(identifier: CloudKitSyncCoordinator.containerIdentifier),
     fileManager: FileManager = .default
   ) {
     self.coupleSpaceStore = coupleSpaceStore
     self.diaryStore = diaryStore
     self.toDoStore = toDoStore
+    self.milestoneStore = milestoneStore
     self.container = container
     self.fileManager = fileManager
 
@@ -197,6 +208,7 @@ final class CloudKitSyncCoordinator {
     let space = coupleSpaceStore.ensureCoupleSpace()
     _ = diaryStore.assignCoupleSpaceID(space.id)
     _ = toDoStore.assignCoupleSpaceID(space.id)
+    _ = milestoneStore.assignCoupleSpaceID(space.id)
 
     let zone = CKRecordZone(zoneName: CloudKitRecordTypes.zoneName)
     let privateDatabase = container.privateCloudDatabase
@@ -281,6 +293,7 @@ final class CloudKitSyncCoordinator {
 
     var references = diaryStore.assignCoupleSpaceID(space.id)
     references.formUnion(toDoStore.assignCoupleSpaceID(space.id))
+    references.formUnion(milestoneStore.assignCoupleSpaceID(space.id))
     references.insert(SyncRecordReference(kind: .coupleSpace, id: space.id))
 
     coupleSpaceStore.setPendingPartnerMergePrompt(false)
@@ -358,7 +371,8 @@ final class CloudKitSyncCoordinator {
       || toDoStore.state.categories.contains {
         $0.deletedAt == nil && $0.id != ToDoStore.uncategorizedCategoryID && $0.coupleSpaceID == nil
       }
-    return hasDiary || hasTodos
+    let hasMilestones = milestoneStore.state.milestones.contains { $0.deletedAt == nil && $0.coupleSpaceID == nil }
+    return hasDiary || hasTodos || hasMilestones
   }
 
   private func bootstrapSyncEnginesIfNeeded() async {
@@ -426,6 +440,7 @@ final class CloudKitSyncCoordinator {
   private func enqueueAllLocalRecords(for coupleSpaceID: UUID) {
     var references = diaryStore.allSyncRecords(coupleSpaceID: coupleSpaceID)
     references.formUnion(toDoStore.allSyncRecords(coupleSpaceID: coupleSpaceID))
+    references.formUnion(milestoneStore.allSyncRecords(coupleSpaceID: coupleSpaceID))
     references.insert(SyncRecordReference(kind: .coupleSpace, id: coupleSpaceID))
     enqueueLocalChanges(references)
   }
@@ -456,6 +471,10 @@ final class CloudKitSyncCoordinator {
 
     for item in toDoStore.state.items where item.coupleSpaceID == space.id {
       records.append(CloudKitRecordMapper.toDoItemRecord(from: item, zoneID: zoneID, parent: rootRecord))
+    }
+
+    for milestone in milestoneStore.state.milestones where milestone.coupleSpaceID == space.id {
+      records.append(CloudKitRecordMapper.milestoneRecord(from: milestone, zoneID: zoneID, parent: rootRecord))
     }
 
     return records
@@ -566,6 +585,18 @@ final class CloudKitSyncCoordinator {
           CloudKitRecordMapper.toDoItemRecord(from: item, zoneID: zoneID, parent: root)
         }
       )
+
+    case .milestone:
+      guard let milestone = milestoneStore.milestoneRecord(id: reference.id) else {
+        return deletedPlaceholder(recordID: recordID, type: CloudKitRecordTypes.milestone)
+      }
+      return baseRecord(
+        recordID: recordID,
+        type: CloudKitRecordTypes.milestone,
+        populate: {
+          CloudKitRecordMapper.milestoneRecord(from: milestone, zoneID: zoneID, parent: root)
+        }
+      )
     }
   }
 
@@ -640,6 +671,11 @@ final class CloudKitSyncCoordinator {
     case CloudKitRecordTypes.toDoItem:
       if let item = CloudKitRecordMapper.toDoItem(from: record) {
         _ = toDoStore.applyRemoteItem(item)
+      }
+
+    case CloudKitRecordTypes.milestone:
+      if let milestone = CloudKitRecordMapper.milestone(from: record) {
+        _ = milestoneStore.applyRemoteMilestone(milestone)
       }
 
     default:

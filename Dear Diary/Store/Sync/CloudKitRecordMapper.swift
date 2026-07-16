@@ -7,6 +7,7 @@ enum CloudKitRecordTypes {
   static let diaryPhoto = "DiaryPhoto"
   static let toDoCategory = "ToDoCategory"
   static let toDoItem = "ToDoItem"
+  static let milestone = "Milestone"
 
   static let zoneName = "CoupleSpaceZone"
 }
@@ -29,6 +30,11 @@ enum CloudKitField {
   static let categoryID = "categoryID"
   static let status = "status"
   static let completedAt = "completedAt"
+  static let date = "date"
+  static let recurrence = "recurrence"
+  static let icon = "icon"
+  static let linkedDiaryEntryID = "linkedDiaryEntryID"
+  static let note = "note"
   static let createdAt = "createdAt"
   static let updatedAt = "updatedAt"
   static let deletedAt = "deletedAt"
@@ -57,6 +63,8 @@ enum CloudKitRecordMapper {
       return "ToDoCategory-\(reference.id.uuidString)"
     case .toDoItem:
       return "ToDoItem-\(reference.id.uuidString)"
+    case .milestone:
+      return "Milestone-\(reference.id.uuidString)"
     }
   }
 
@@ -76,6 +84,9 @@ enum CloudKitRecordMapper {
     }
     if name.hasPrefix("ToDoItem-"), let id = UUID(uuidString: String(name.dropFirst("ToDoItem-".count))) {
       return SyncRecordReference(kind: .toDoItem, id: id)
+    }
+    if name.hasPrefix("Milestone-"), let id = UUID(uuidString: String(name.dropFirst("Milestone-".count))) {
+      return SyncRecordReference(kind: .milestone, id: id)
     }
     return nil
   }
@@ -281,6 +292,54 @@ enum CloudKitRecordMapper {
       order: record[CloudKitField.order] as? Int ?? 0,
       createdAt: record[CloudKitField.createdAt] as? Date ?? Date(),
       completedAt: record[CloudKitField.completedAt] as? Date,
+      updatedAt: record[CloudKitField.updatedAt] as? Date ?? Date(),
+      deletedAt: record[CloudKitField.deletedAt] as? Date,
+      modifiedByDeviceID: record[CloudKitField.modifiedByDeviceID] as? String ?? "",
+      version: record[CloudKitField.version] as? Int ?? 1
+    )
+  }
+
+  static func milestoneRecord(
+    from milestone: Milestone,
+    zoneID: CKRecordZone.ID,
+    parent: CKRecord
+  ) -> CKRecord {
+    let recordID = CKRecord.ID(recordName: recordName(for: SyncRecordReference(kind: .milestone, id: milestone.id)), zoneID: zoneID)
+    let record = CKRecord(recordType: CloudKitRecordTypes.milestone, recordID: recordID)
+    record.parent = CKRecord.Reference(recordID: parent.recordID, action: .none)
+    record[CloudKitField.coupleSpaceID] = milestone.coupleSpaceID?.uuidString
+    record[CloudKitField.title] = milestone.title
+    record[CloudKitField.note] = milestone.note
+    record[CloudKitField.date] = milestone.date
+    record[CloudKitField.recurrence] = milestone.recurrence.rawValue
+    record[CloudKitField.icon] = milestone.icon
+    record[CloudKitField.linkedDiaryEntryID] = milestone.linkedDiaryEntryID?.uuidString
+    record[CloudKitField.createdAt] = milestone.createdAt
+    record[CloudKitField.updatedAt] = milestone.updatedAt
+    record[CloudKitField.deletedAt] = milestone.deletedAt
+    record[CloudKitField.modifiedByDeviceID] = milestone.modifiedByDeviceID
+    record[CloudKitField.version] = milestone.version
+    return record
+  }
+
+  static func milestone(from record: CKRecord) -> Milestone? {
+    guard record.recordType == CloudKitRecordTypes.milestone else { return nil }
+    guard let reference = reference(from: record.recordID), reference.kind == .milestone else { return nil }
+
+    let recurrenceRaw = record[CloudKitField.recurrence] as? String ?? MilestoneRecurrence.none.rawValue
+    let coupleSpaceRaw = record[CloudKitField.coupleSpaceID] as? String
+    let linkedDiaryEntryRaw = record[CloudKitField.linkedDiaryEntryID] as? String
+
+    return Milestone(
+      id: reference.id,
+      coupleSpaceID: coupleSpaceRaw.flatMap(UUID.init(uuidString:)),
+      title: record[CloudKitField.title] as? String ?? "",
+      date: record[CloudKitField.date] as? Date ?? Date(),
+      note: record[CloudKitField.note] as? String ?? "",
+      recurrence: MilestoneRecurrence(rawValue: recurrenceRaw) ?? .none,
+      icon: record[CloudKitField.icon] as? String ?? "",
+      linkedDiaryEntryID: linkedDiaryEntryRaw.flatMap(UUID.init(uuidString:)),
+      createdAt: record[CloudKitField.createdAt] as? Date ?? Date(),
       updatedAt: record[CloudKitField.updatedAt] as? Date ?? Date(),
       deletedAt: record[CloudKitField.deletedAt] as? Date,
       modifiedByDeviceID: record[CloudKitField.modifiedByDeviceID] as? String ?? "",

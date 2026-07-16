@@ -111,4 +111,102 @@ struct CloudKitRecordMapperTests {
     #expect(decoded?.order == 2)
     #expect(decoded?.categoryID == categoryID)
   }
+
+  @Test func milestoneRoundTripOneTime() {
+    let spaceID = UUID()
+    let milestoneID = UUID()
+    let now = Date(timeIntervalSince1970: 1_900_000_000)
+    let milestone = Milestone(
+      id: milestoneID,
+      coupleSpaceID: spaceID,
+      title: "First date",
+      date: now,
+      note: "The little cafe downtown",
+      recurrence: .none,
+      icon: "heart.fill",
+      linkedDiaryEntryID: nil,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: nil,
+      modifiedByDeviceID: "device-a",
+      version: 1
+    )
+
+    let zoneID = CloudKitRecordMapper.zoneID(ownerName: CKCurrentUserDefaultName)
+    let root = CloudKitRecordMapper.coupleSpaceRecord(
+      from: CoupleSpace(
+        id: spaceID,
+        datingStartDay: now,
+        createdAt: now,
+        updatedAt: now,
+        deletedAt: nil,
+        modifiedByDeviceID: "device-a",
+        version: 1
+      ),
+      zoneID: zoneID
+    )
+    let record = CloudKitRecordMapper.milestoneRecord(from: milestone, zoneID: zoneID, parent: root)
+    let decoded = CloudKitRecordMapper.milestone(from: record)
+
+    #expect(decoded?.id == milestoneID)
+    #expect(decoded?.title == "First date")
+    #expect(decoded?.note == "The little cafe downtown")
+    #expect(decoded?.date == now)
+    #expect(decoded?.recurrence == MilestoneRecurrence.none)
+    #expect(decoded?.icon == "heart.fill")
+    #expect(decoded?.linkedDiaryEntryID == nil)
+  }
+
+  @Test func milestoneRoundTripYearlyWithLinkedEntry() {
+    let spaceID = UUID()
+    let milestoneID = UUID()
+    let linkedEntryID = UUID()
+    let now = Date(timeIntervalSince1970: 1_950_000_000)
+    let milestone = Milestone(
+      id: milestoneID,
+      coupleSpaceID: spaceID,
+      title: "Anniversary",
+      date: now,
+      note: "",
+      recurrence: .yearly,
+      icon: "star.fill",
+      linkedDiaryEntryID: linkedEntryID,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: nil,
+      modifiedByDeviceID: "device-b",
+      version: 1
+    )
+
+    let zoneID = CloudKitRecordMapper.zoneID(ownerName: CKCurrentUserDefaultName)
+    let root = CloudKitRecordMapper.coupleSpaceRecord(
+      from: CoupleSpace(
+        id: spaceID,
+        datingStartDay: now,
+        createdAt: now,
+        updatedAt: now,
+        deletedAt: nil,
+        modifiedByDeviceID: "device-b",
+        version: 1
+      ),
+      zoneID: zoneID
+    )
+    let record = CloudKitRecordMapper.milestoneRecord(from: milestone, zoneID: zoneID, parent: root)
+    let decoded = CloudKitRecordMapper.milestone(from: record)
+
+    #expect(decoded?.id == milestoneID)
+    #expect(decoded?.recurrence == .yearly)
+    #expect(decoded?.linkedDiaryEntryID == linkedEntryID)
+    #expect(decoded?.modifiedByDeviceID == "device-b")
+  }
+
+  @Test func referenceParsesMilestonePrefix() {
+    let id = UUID()
+    let zoneID = CloudKitRecordMapper.zoneID(ownerName: CKCurrentUserDefaultName)
+    let recordID = CKRecord.ID(recordName: "Milestone-\(id.uuidString)", zoneID: zoneID)
+    let reference = CloudKitRecordMapper.reference(from: recordID)
+
+    #expect(reference?.kind == .milestone)
+    #expect(reference?.id == id)
+  }
 }
