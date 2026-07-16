@@ -97,6 +97,64 @@ struct LatestMemoryCard: View {
   }
 }
 
+struct NextMilestoneCard: View {
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+  var icon: String
+  var title: String
+  var date: Date
+  var daysUntil: Int
+
+  private var headingFont: Font {
+    dynamicTypeSize.isAccessibilitySize ? .cardTitleCompact : .cardTitle
+  }
+
+  private var isHeart: Bool {
+    icon.hasPrefix("heart")
+  }
+
+  private var dateLine: String {
+    let formattedDate = date.formatted(date: .abbreviated, time: .omitted)
+    switch daysUntil {
+    case ..<0: return formattedDate
+    case 0: return "\(formattedDate) · Today"
+    case 1: return "\(formattedDate) · Tomorrow"
+    default: return "\(formattedDate) · in \(daysUntil) days"
+    }
+  }
+
+  var body: some View {
+    Card(verticalPadding: 16) {
+      HStack(alignment: .top, spacing: 12) {
+        VStack(alignment: .leading, spacing: 8) {
+          HStack(alignment: .top, spacing: 4) {
+            Image(systemName: icon)
+              .foregroundStyle(isHeart ? Color("HeartRose") : Color("RomanceForeground"))
+              .font(.system(size: 16))
+            Text("Something to look forward to")
+              .font(headingFont)
+              .lineLimit(2)
+              .minimumScaleFactor(0.6)
+              .allowsTightening(true)
+          }
+          Text(title)
+            .font(.entryTitle)
+            .foregroundStyle(Color("RomanceForeground"))
+          Text(dateLine)
+            .font(.metadata)
+            .foregroundStyle(Color("InkMuted"))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+
+        Image(systemName: "chevron.right")
+          .font(.system(size: 14, weight: .semibold))
+          .foregroundStyle(Color("InkMuted"))
+          .padding(.top, 4)
+      }
+      .frame(maxWidth: .infinity, alignment: .leading)
+    }
+  }
+}
+
 struct HomeView: View {
   @Environment(AppEnvironment.self) private var environment
 
@@ -128,6 +186,49 @@ struct HomeView: View {
     return calendar.dateComponents([.day], from: todayStart, to: anniversaryDate).day ?? 0
   }
 
+  private struct NextMilestoneCandidate {
+    var icon: String
+    var title: String
+    var date: Date
+  }
+
+  /// The single soonest upcoming moment worth surfacing: whichever of the
+  /// nearest user-created milestone or the auto-derived special-number
+  /// moment lands first. Never both, never a list — see AutoMilestone.swift.
+  private var nextMilestoneCandidate: NextMilestoneCandidate? {
+    let calendar = Calendar.current
+    let todayStart = calendar.startOfDay(for: Date())
+    let milestoneStore = environment.milestoneStore
+
+    let nearestUserMilestone = milestoneStore.milestones
+      .map { ($0, milestoneStore.nextOccurrence(of: $0)) }
+      .filter { calendar.startOfDay(for: $0.1) >= todayStart }
+      .min { $0.1 < $1.1 }
+
+    let autoMoment = AutoMilestone.nextMoment(datingStartDay: anniversaryAnchorDay)
+
+    switch (nearestUserMilestone, autoMoment) {
+    case let (userMilestone?, auto?):
+      if userMilestone.1 <= auto.date {
+        return NextMilestoneCandidate(icon: userMilestone.0.icon, title: userMilestone.0.title, date: userMilestone.1)
+      } else {
+        return NextMilestoneCandidate(icon: "sparkles", title: auto.label, date: auto.date)
+      }
+    case let (userMilestone?, nil):
+      return NextMilestoneCandidate(icon: userMilestone.0.icon, title: userMilestone.0.title, date: userMilestone.1)
+    case let (nil, auto?):
+      return NextMilestoneCandidate(icon: "sparkles", title: auto.label, date: auto.date)
+    case (nil, nil):
+      return nil
+    }
+  }
+
+  private func daysUntil(_ date: Date) -> Int {
+    let calendar = Calendar.current
+    let todayStart = calendar.startOfDay(for: Date())
+    return calendar.dateComponents([.day], from: todayStart, to: calendar.startOfDay(for: date)).day ?? 0
+  }
+
   var body: some View {
     ScrollView {
       VStack(spacing: 16) {
@@ -140,6 +241,19 @@ struct HomeView: View {
             entry: latestEntry,
             photoURL: latestEntry.photos.first.map { environment.diaryStore.photoURL(for: $0) }
           )
+        }
+        if let candidate = nextMilestoneCandidate {
+          NavigationLink {
+            MilestonesView(store: environment.milestoneStore)
+          } label: {
+            NextMilestoneCard(
+              icon: candidate.icon,
+              title: candidate.title,
+              date: candidate.date,
+              daysUntil: daysUntil(candidate.date)
+            )
+          }
+          .buttonStyle(.plain)
         }
       }
       .padding(.horizontal, 16)
