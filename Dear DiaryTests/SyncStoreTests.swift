@@ -181,6 +181,33 @@ struct ToDoStoreSyncTests {
     #expect(store.state.categories.allSatisfy { $0.coupleSpaceID == coupleSpaceID || $0.deletedAt != nil })
     #expect(store.state.items.allSatisfy { $0.coupleSpaceID == coupleSpaceID || $0.deletedAt != nil })
   }
+
+  @Test func seedsDefaultBucketCategoriesOnceOnFirstLaunch() throws {
+    let fixture = try StoreFixture()
+    // Simulate a first launch where seeding has never run.
+    fixture.userDefaults.removeObject(forKey: ToDoStore.bucketDefaultsSeededKey)
+
+    let store = ToDoStore(
+      storeURL: fixture.todoURL,
+      userDefaults: fixture.userDefaults,
+      deviceID: "test-device"
+    )
+
+    let names = Set(store.categories.map(\.name))
+    #expect(ToDoStore.defaultBucketCategoryNames.allSatisfy { names.contains($0) })
+
+    // The couple deletes a seeded category; a relaunch must not resurrect it,
+    // because the run-once flag is now set.
+    let tripsID = store.categories.first(where: { $0.name == "Trips" })!.id
+    store.deleteCategory(id: tripsID)
+
+    let relaunched = ToDoStore(
+      storeURL: fixture.todoURL,
+      userDefaults: fixture.userDefaults,
+      deviceID: "test-device"
+    )
+    #expect(relaunched.categories.contains(where: { $0.name == "Trips" }) == false)
+  }
 }
 
 private struct StoreFixture {
@@ -196,6 +223,10 @@ private struct StoreFixture {
     coupleSpaceURL = rootURL.appendingPathComponent("coupleSpace.store.v1.json")
     todoURL = rootURL.appendingPathComponent("todo.store.v1.json")
     userDefaults = UserDefaults(suiteName: UUID().uuidString)!
+    // Default-category seeding is production behaviour orthogonal to the store
+    // mechanics these fixtures exercise; mark it done so it stays out of the way.
+    // The dedicated seeding test clears this flag explicitly.
+    userDefaults.set(true, forKey: ToDoStore.bucketDefaultsSeededKey)
   }
 }
 
