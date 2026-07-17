@@ -78,7 +78,7 @@ struct ToDoView: View {
     }
     .sheet(isPresented: $showingNewItemSheet) {
       NewToDoSheet(store: store)
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showingNewCategorySheet) {
       NewCategorySheet(store: store)
@@ -394,7 +394,7 @@ private struct NewToDoSheet: View {
             Text(category.name).tag(category.id)
           }
         }
-        .pickerStyle(.menu)
+        .pickerStyle(.navigationLink)
         Toggle("Set a date", isOn: $hasTargetDate)
           .font(.body)
         if hasTargetDate {
