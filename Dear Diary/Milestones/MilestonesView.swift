@@ -157,7 +157,7 @@ private struct MilestoneRow: View {
   let onEdit: () -> Void
   let onWriteMemory: () -> Void
 
-  private var isYearly: Bool { milestone.recurrence == .yearly }
+  private var isRecurring: Bool { milestone.recurrence != .none }
 
   private var nextOccurrence: Date {
     store.nextOccurrence(of: milestone)
@@ -194,13 +194,19 @@ private struct MilestoneRow: View {
               Text(milestone.title)
                 .font(.cardTitle)
                 .foregroundStyle(Color("RomanceForeground"))
-              if isYearly {
-                Text(MilestoneRecurrence.yearly.label)
+                .lineLimit(1)
+                .truncationMode(.tail)
+              if isRecurring {
+                Text(milestone.recurrence.label)
                   .font(.metadata)
                   .padding(.horizontal, 8)
                   .padding(.vertical, 4)
                   .background(Color("PlumBackground"), in: Capsule())
                   .foregroundStyle(Color("PlumForeground"))
+                  // Keep the badge at its intrinsic size so a long title
+                  // truncates with an ellipsis instead of colliding with it.
+                  .fixedSize()
+                  .layoutPriority(1)
               }
             }
 
@@ -243,7 +249,7 @@ private struct MilestoneRow: View {
 
   private var dateLine: String {
     let formattedDate = milestone.date.formatted(date: .abbreviated, time: .omitted)
-    guard isYearly else { return formattedDate }
+    guard isRecurring else { return formattedDate }
     let formattedNext = nextOccurrence.formatted(date: .abbreviated, time: .omitted)
     return "\(formattedDate) · Next: \(formattedNext)"
   }

@@ -163,6 +163,46 @@ struct MilestoneStoreTests {
     #expect(next == expected)
   }
 
+  @Test func nextOccurrenceForMonthlyRollsToThisMonthWhenUpcoming() throws {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "UTC")!
+
+    let anchorDate = calendar.date(from: DateComponents(year: 2020, month: 3, day: 15))!
+    let milestone = monthlyMilestone(date: anchorDate)
+    let referenceDate = calendar.date(from: DateComponents(year: 2026, month: 7, day: 10))!
+
+    let next = Milestone.nextOccurrence(of: milestone, from: referenceDate, calendar: calendar)
+    let expected = calendar.date(from: DateComponents(year: 2026, month: 7, day: 15))!
+    #expect(next == expected)
+  }
+
+  @Test func nextOccurrenceForMonthlyRollsToNextMonthWhenPassed() throws {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "UTC")!
+
+    let anchorDate = calendar.date(from: DateComponents(year: 2020, month: 3, day: 5))!
+    let milestone = monthlyMilestone(date: anchorDate)
+    let referenceDate = calendar.date(from: DateComponents(year: 2026, month: 7, day: 20))!
+
+    let next = Milestone.nextOccurrence(of: milestone, from: referenceDate, calendar: calendar)
+    let expected = calendar.date(from: DateComponents(year: 2026, month: 8, day: 5))!
+    #expect(next == expected)
+  }
+
+  @Test func nextOccurrenceForMonthlyClampsDay31InShortMonth() throws {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "UTC")!
+
+    let anchorDate = calendar.date(from: DateComponents(year: 2020, month: 1, day: 31))!
+    let milestone = monthlyMilestone(date: anchorDate)
+    // February 2026 has 28 days, so the 31st folds to Feb 28.
+    let referenceDate = calendar.date(from: DateComponents(year: 2026, month: 2, day: 1))!
+
+    let next = Milestone.nextOccurrence(of: milestone, from: referenceDate, calendar: calendar)
+    let expected = calendar.date(from: DateComponents(year: 2026, month: 2, day: 28))!
+    #expect(next == expected)
+  }
+
   @Test func nextOccurrenceHandlesFeb29InNonLeapYear() throws {
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = TimeZone(identifier: "UTC")!
@@ -208,6 +248,24 @@ struct MilestoneStoreTests {
 
     #expect(references.contains(SyncRecordReference(kind: .milestone, id: id)))
     #expect(store.milestoneRecord(id: id)?.coupleSpaceID == coupleSpaceID)
+  }
+
+  private func monthlyMilestone(date: Date) -> Milestone {
+    Milestone(
+      id: UUID(),
+      coupleSpaceID: nil,
+      title: "Monthly",
+      date: date,
+      note: "",
+      recurrence: .monthly,
+      icon: "star.fill",
+      linkedDiaryEntryID: nil,
+      createdAt: Date(),
+      updatedAt: Date(),
+      deletedAt: nil,
+      modifiedByDeviceID: "device",
+      version: 1
+    )
   }
 }
 

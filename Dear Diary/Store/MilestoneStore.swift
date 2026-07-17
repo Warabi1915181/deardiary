@@ -2,12 +2,17 @@ import Foundation
 
 enum MilestoneRecurrence: String, Codable, CaseIterable, Identifiable {
   case none
+  case monthly
   case yearly
 
   var id: String { rawValue }
 
   var label: String {
-    self == .none ? "One time" : "Every year"
+    switch self {
+    case .none: return "One time"
+    case .monthly: return "Every month"
+    case .yearly: return "Every year"
+    }
   }
 }
 
@@ -286,6 +291,24 @@ extension Milestone {
     case .none:
       return milestone.date
 
+    case .monthly:
+      let refDay = calendar.startOfDay(for: referenceDate)
+      let targetDay = calendar.component(.day, from: milestone.date)
+      let monthComponents = calendar.dateComponents([.year, .month], from: refDay)
+      guard let monthStart = calendar.date(from: monthComponents) else { return milestone.date }
+
+      for monthOffset in 0 ... 1 {
+        if
+          let month = calendar.date(byAdding: .month, value: monthOffset, to: monthStart),
+          let candidate = Self.clampedDate(day: targetDay, inMonthOf: month, calendar: calendar),
+          candidate >= refDay
+        {
+          return candidate
+        }
+      }
+
+      return milestone.date
+
     case .yearly:
       let refDay = calendar.startOfDay(for: referenceDate)
       let anchorComponents = calendar.dateComponents([.month, .day], from: milestone.date)
@@ -306,6 +329,16 @@ extension Milestone {
 
       return Self.date(year: refYear + 1, month: month, day: day, calendar: calendar) ?? milestone.date
     }
+  }
+
+  /// Builds `day` within the month containing `monthReference`, clamping to the
+  /// month's last day when it is shorter (the 31st in a 30-day month, or the
+  /// 29th–31st in February) — the monthly analogue of the yearly Feb-29 fold.
+  private static func clampedDate(day: Int, inMonthOf monthReference: Date, calendar: Calendar) -> Date? {
+    guard let range = calendar.range(of: .day, in: .month, for: monthReference) else { return nil }
+    var components = calendar.dateComponents([.year, .month], from: monthReference)
+    components.day = min(day, range.upperBound - 1)
+    return calendar.date(from: components).map { calendar.startOfDay(for: $0) }
   }
 
   private static func date(year: Int, month: Int, day: Int, calendar: Calendar) -> Date? {
