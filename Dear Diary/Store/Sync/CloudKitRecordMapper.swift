@@ -30,6 +30,7 @@ enum CloudKitField {
   static let categoryID = "categoryID"
   static let status = "status"
   static let completedAt = "completedAt"
+  static let targetDate = "targetDate"
   static let date = "date"
   static let recurrence = "recurrence"
   static let icon = "icon"
@@ -263,6 +264,8 @@ enum CloudKitRecordMapper {
     record[CloudKitField.categoryID] = item.categoryID.uuidString
     record[CloudKitField.status] = item.status.rawValue
     record[CloudKitField.order] = item.order
+    record[CloudKitField.targetDate] = item.targetDate
+    record[CloudKitField.linkedDiaryEntryID] = item.linkedDiaryEntryID?.uuidString
     record[CloudKitField.createdAt] = item.createdAt
     record[CloudKitField.completedAt] = item.completedAt
     record[CloudKitField.updatedAt] = item.updatedAt
@@ -281,6 +284,7 @@ enum CloudKitRecordMapper {
 
     let statusRaw = record[CloudKitField.status] as? String ?? ToDoStatus.active.rawValue
     let coupleSpaceRaw = record[CloudKitField.coupleSpaceID] as? String
+    let linkedDiaryEntryRaw = record[CloudKitField.linkedDiaryEntryID] as? String
 
     return ToDoItem(
       id: reference.id,
@@ -290,6 +294,8 @@ enum CloudKitRecordMapper {
       categoryID: categoryID,
       status: ToDoStatus(rawValue: statusRaw) ?? .active,
       order: record[CloudKitField.order] as? Int ?? 0,
+      targetDate: record[CloudKitField.targetDate] as? Date,
+      linkedDiaryEntryID: linkedDiaryEntryRaw.flatMap(UUID.init(uuidString:)),
       createdAt: record[CloudKitField.createdAt] as? Date ?? Date(),
       completedAt: record[CloudKitField.completedAt] as? Date,
       updatedAt: record[CloudKitField.updatedAt] as? Date ?? Date(),

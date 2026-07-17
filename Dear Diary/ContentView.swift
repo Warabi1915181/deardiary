@@ -56,7 +56,7 @@ struct ContentView: View {
       Tab("Our List", systemImage: "list.bullet") {
         NavigationStack {
           ViewWithBackdrop {
-            ToDoView(store: environment.toDoStore)
+            ToDoView(store: environment.toDoStore, diaryStore: environment.diaryStore)
           }
         }
       }

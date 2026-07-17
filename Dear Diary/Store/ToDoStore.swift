@@ -25,6 +25,8 @@ struct ToDoItem: Identifiable, Codable, Hashable, SyncStamped {
   var categoryID: UUID
   var status: ToDoStatus
   var order: Int
+  var targetDate: Date?
+  var linkedDiaryEntryID: UUID?
   var createdAt: Date
   var completedAt: Date?
   var updatedAt: Date
@@ -44,6 +46,9 @@ final class ToDoStore {
   static let legacyAppStorageKey = "todo.store.v1.json"
 
   static let uncategorizedCategoryID = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
+
+  static let bucketDefaultsSeededKey = "todo.bucketDefaults.v1.seeded"
+  static let defaultBucketCategoryNames = ["Dates", "Trips", "Movies", "Food"]
 
   private(set) var state: ToDoPersistedState {
     didSet { save() }
@@ -85,6 +90,7 @@ final class ToDoStore {
       let decoded = try? decoder.decode(ToDoPersistedState.self, from: data)
     {
       state = Self.normalize(decoded, deviceID: deviceID)
+      seedDefaultBucketCategoriesIfNeeded()
       return
     }
 
@@ -92,11 +98,13 @@ final class ToDoStore {
       state = Self.normalize(migrated, deviceID: deviceID)
       save()
       userDefaults.removeObject(forKey: Self.legacyAppStorageKey)
+      seedDefaultBucketCategoriesIfNeeded()
       return
     }
 
     state = Self.defaultState(deviceID: deviceID)
     save()
+    seedDefaultBucketCategoriesIfNeeded()
   }
 
   var categories: [ToDoCategory] {
@@ -188,7 +196,13 @@ final class ToDoStore {
     onRecordsChanged?(changedReferences)
   }
 
-  func addItem(title: String, details: String, categoryID: UUID, coupleSpaceID: UUID? = nil) -> Bool {
+  func addItem(
+    title: String,
+    details: String,
+    categoryID: UUID,
+    targetDate: Date? = nil,
+    coupleSpaceID: UUID? = nil
+  ) -> Bool {
     let normalizedTitle = normalizedNameFromInput(title)
     guard !normalizedTitle.isEmpty else { return false }
 
@@ -206,6 +220,8 @@ final class ToDoStore {
       categoryID: safeCategoryID,
       status: .active,
       order: nextOrder,
+      targetDate: targetDate,
+      linkedDiaryEntryID: nil,
       createdAt: now,
       completedAt: nil,
       updatedAt: now,
@@ -239,6 +255,18 @@ final class ToDoStore {
     state.items[index].completedAt = completed ? Date() : nil
     touchItem(at: index)
     notifyChanges([SyncRecordReference(kind: .toDoItem, id: id)])
+  }
+
+  /// Links (or unlinks) a completed bucket item to a diary entry, so a finished
+  /// dream can carry its written-down memory. Mirrors the milestone→diary bridge.
+  func setLinkedDiaryEntryID(_ id: UUID, entryID: UUID?) -> Bool {
+    guard let index = state.items.firstIndex(where: { $0.id == id && $0.deletedAt == nil }) else {
+      return false
+    }
+    state.items[index].linkedDiaryEntryID = entryID
+    touchItem(at: index)
+    notifyChanges([SyncRecordReference(kind: .toDoItem, id: id)])
+    return true
   }
 
   func moveItem(
@@ -391,6 +419,48 @@ final class ToDoStore {
     } catch {
       assertionFailure("Failed to save to-do store: \(error)")
     }
+  }
+
+  /// Seeds the relationship bucket-list categories (Dates, Trips, Movies, Food)
+  /// exactly once. Runs on first launch after this feature ships: any custom
+  /// categories the couple already made are preserved, a default is only added
+  /// when no same-named category exists, and a later delete stays deleted
+  /// because the run-once flag is set regardless.
+  private func seedDefaultBucketCategoriesIfNeeded() {
+    guard !userDefaults.bool(forKey: Self.bucketDefaultsSeededKey) else { return }
+
+    let existingSpaceID = state.categories.first(where: { $0.coupleSpaceID != nil })?.coupleSpaceID
+    let now = Date()
+    var nextOrder = (state.categories
+      .filter { $0.id != Self.uncategorizedCategoryID && $0.deletedAt == nil }
+      .map(\.order).max() ?? 0)
+
+    var seeded: [ToDoCategory] = []
+    for name in Self.defaultBucketCategoryNames {
+      let alreadyExists = state.categories.contains {
+        $0.deletedAt == nil && $0.name.caseInsensitiveCompare(name) == .orderedSame
+      }
+      guard !alreadyExists else { continue }
+      nextOrder += 1
+      seeded.append(
+        ToDoCategory(
+          id: UUID(),
+          coupleSpaceID: existingSpaceID,
+          name: name,
+          order: nextOrder,
+          createdAt: now,
+          updatedAt: now,
+          deletedAt: nil,
+          modifiedByDeviceID: deviceID,
+          version: Self.schemaVersion
+        )
+      )
+    }
+
+    if !seeded.isEmpty {
+      state.categories.append(contentsOf: seeded)
+    }
+    userDefaults.set(true, forKey: Self.bucketDefaultsSeededKey)
   }
 
   private func bucketItemIDs(categoryID: UUID, status: ToDoStatus, excluding id: UUID?) -> [UUID] {
@@ -547,6 +617,8 @@ final class ToDoStore {
         categoryID: item.categoryID,
         status: item.status,
         order: item.order,
+        targetDate: nil,
+        linkedDiaryEntryID: nil,
         createdAt: item.createdAt,
         completedAt: item.completedAt,
         updatedAt: item.completedAt ?? item.createdAt,

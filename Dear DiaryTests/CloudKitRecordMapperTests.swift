@@ -82,6 +82,8 @@ struct CloudKitRecordMapperTests {
       categoryID: categoryID,
       status: .active,
       order: 2,
+      targetDate: now.addingTimeInterval(86_400),
+      linkedDiaryEntryID: nil,
       createdAt: now,
       completedAt: nil,
       updatedAt: now,
@@ -110,6 +112,8 @@ struct CloudKitRecordMapperTests {
     #expect(decoded?.title == "Weekend picnic")
     #expect(decoded?.order == 2)
     #expect(decoded?.categoryID == categoryID)
+    #expect(decoded?.targetDate == now.addingTimeInterval(86_400))
+    #expect(decoded?.linkedDiaryEntryID == nil)
   }
 
   @Test func milestoneRoundTripOneTime() {
