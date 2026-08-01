@@ -162,7 +162,8 @@ private struct DiaryEntryCard: View {
   }
 }
 
-private struct DiaryEntryDetailView: View {
+// Not private: Home pushes this when a resurfaced memory is tapped.
+struct DiaryEntryDetailView: View {
   var store: DiaryStore
   let entryID: UUID
   @Environment(\.dismiss) private var dismiss

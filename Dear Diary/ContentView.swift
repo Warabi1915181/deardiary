@@ -34,33 +34,43 @@ struct ViewWithBackdrop<Content: View>: View {
   }
 }
 
+/// The app's four surfaces. Named so one screen can send the reader to
+/// another — Home's ideas line opens Our List.
+enum AppTab: Hashable {
+  case home
+  case diary
+  case ourList
+  case settings
+}
+
 struct ContentView: View {
   @Environment(AppEnvironment.self) private var environment
+  @State private var selectedTab: AppTab = .home
 
   var body: some View {
-    TabView {
-      Tab("Home", systemImage: "house") {
+    TabView(selection: $selectedTab) {
+      Tab("Home", systemImage: "house", value: AppTab.home) {
         NavigationStack {
           ViewWithBackdrop(atmosphere: .candlelightHome) {
-            HomeView()
+            HomeView(selectedTab: $selectedTab)
           }
         }
       }
-      Tab("Diary", systemImage: "book.closed") {
+      Tab("Diary", systemImage: "book.closed", value: AppTab.diary) {
         NavigationStack {
           ViewWithBackdrop {
             DiaryView(store: environment.diaryStore)
           }
         }
       }
-      Tab("Our List", systemImage: "list.bullet") {
+      Tab("Our List", systemImage: "list.bullet", value: AppTab.ourList) {
         NavigationStack {
           ViewWithBackdrop {
             ToDoView(store: environment.toDoStore, diaryStore: environment.diaryStore)
           }
         }
       }
-      Tab("Settings", systemImage: "gear") {
+      Tab("Settings", systemImage: "gear", value: AppTab.settings) {
         NavigationStack {
           ViewWithBackdrop {
             SettingsMenuView()

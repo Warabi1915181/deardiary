@@ -122,6 +122,11 @@ final class ToDoStore {
     state.categories.first(where: { $0.id == id && $0.deletedAt == nil })
   }
 
+  /// Ideas still waiting, across every category — what Home summarises.
+  var activeItemCount: Int {
+    state.items.count { $0.status == .active && $0.deletedAt == nil }
+  }
+
   func items(for status: ToDoStatus, in categoryID: UUID) -> [ToDoItem] {
     state.items
       .filter { $0.status == status && $0.categoryID == categoryID && $0.deletedAt == nil }

@@ -1,41 +1,50 @@
 import SwiftUI
 import UIKit
 
-struct AnniversaryCard: View {
+/// The count of days together is the card's focal number — it only ever grows.
+/// The anniversary countdown signs it underneath. No heading label: the number
+/// and its words are one handwritten sentence.
+struct UsCard: View {
   @Environment(\.colorScheme) private var colorScheme
-  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   var anniversaryDate: Date
-  var numberOfDays: Int
+  var daysTogether: Int
+  var daysUntilAnniversary: Int
 
-  private var headingFont: Font {
-    dynamicTypeSize.isAccessibilitySize ? .cardTitleCompact : .cardTitle
+  private var anniversaryLine: String {
+    let formattedDate = anniversaryDate.formatted(.dateTime.month(.abbreviated).day())
+    switch daysUntilAnniversary {
+    case 0: return "\(formattedDate) · today"
+    case 1: return "\(formattedDate) · tomorrow"
+    default: return "\(formattedDate) · \(daysUntilAnniversary) days away"
+    }
   }
 
   var body: some View {
     Card(verticalPadding: 16) {
       VStack(alignment: .leading, spacing: 8) {
-        HStack(alignment: .top, spacing: 4) {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+          Text(daysTogether.formatted(.number.grouping(.automatic)))
+            .font(.displayNumber)
+          Text("days together")
+            .font(.bodyEmphasis)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .allowsTightening(true)
+        }
+
+        HStack(spacing: 4) {
           Image(systemName: "heart.fill")
+            .font(.system(size: 10))
             .foregroundColor(Color("HeartRose"))
-            .font(.system(size: 16))
             // Candlelight: the rose jewel glows faintly in the dark.
             .shadow(
               color: Color("HeartRose").opacity(colorScheme == .dark ? 0.55 : 0),
-              radius: 5
+              radius: 4
             )
-          Text("Our Anniversary")
-            .font(headingFont)
-            .lineLimit(2)
-            .minimumScaleFactor(0.6)
-            .allowsTightening(true)
+          Text(anniversaryLine)
+            .font(.metadata)
+            .foregroundStyle(Color("InkMuted"))
         }
-        Text("\(numberOfDays)")
-          .font(.displayNumber)
-        Text("days left")
-          .font(.bodyEmphasis)
-        Text(anniversaryDate.formatted(date: .abbreviated, time: .omitted))
-          .font(.metadata)
-          .foregroundStyle(Color("InkMuted"))
       }
       .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -155,8 +164,61 @@ struct NextMilestoneCard: View {
   }
 }
 
+/// Home's card stack ends at the milestone; what follows is margin. A ruled
+/// aside for the resurfaced memory, and one quiet line for waiting ideas —
+/// neither is a Card, so neither competes with the stack above.
+struct ResurfacedMemoryWhisper: View {
+  let pick: ResurfacedMemory.Pick
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 4) {
+      Text(ResurfacedMemory.heading(for: pick))
+        .font(.metadata)
+        .foregroundStyle(Color("InkMuted"))
+      Text(pick.entry.title)
+        .font(.regularItalic(size: 24))
+        .foregroundStyle(Color("RomanceForeground"))
+        .multilineTextAlignment(.leading)
+      Text(pick.entry.entryDate.formatted(date: .abbreviated, time: .omitted))
+        .font(.metadata)
+        .foregroundStyle(Color("InkMuted"))
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(.leading, 12)
+    .overlay(alignment: .leading) {
+      // True 1px hairline — the documented exception to the 4pt grid.
+      Rectangle()
+        .fill(Color("PlumForeground").opacity(0.35))
+        .frame(width: 1)
+    }
+  }
+}
+
+struct IdeasWaitingRow: View {
+  let count: Int
+
+  private var label: String {
+    count == 1 ? "1 idea waiting" : "\(count) ideas waiting"
+  }
+
+  var body: some View {
+    HStack(spacing: 8) {
+      Text(label)
+        .font(.body)
+        .foregroundStyle(Color("InkMuted"))
+      Image(systemName: "chevron.right")
+        .font(.system(size: 11, weight: .semibold))
+        .foregroundStyle(Color("InkMuted"))
+      Spacer(minLength: 0)
+    }
+    .frame(height: 44)
+    .contentShape(Rectangle())
+  }
+}
+
 struct HomeView: View {
   @Environment(AppEnvironment.self) private var environment
+  @Binding var selectedTab: AppTab
 
   private var anniversaryAnchorDay: Date {
     environment.coupleSpaceStore.datingStartDay
@@ -184,6 +246,13 @@ struct HomeView: View {
     let calendar = Calendar.current
     let todayStart = calendar.startOfDay(for: Date())
     return calendar.dateComponents([.day], from: todayStart, to: anniversaryDate).day ?? 0
+  }
+
+  private var daysTogether: Int {
+    let calendar = Calendar.current
+    let start = calendar.startOfDay(for: anniversaryAnchorDay)
+    let todayStart = calendar.startOfDay(for: Date())
+    return max(calendar.dateComponents([.day], from: start, to: todayStart).day ?? 0, 0)
   }
 
   private struct NextMilestoneCandidate {
@@ -223,6 +292,10 @@ struct HomeView: View {
     }
   }
 
+  private var resurfacedPick: ResurfacedMemory.Pick? {
+    ResurfacedMemory.pick(from: environment.diaryStore.entries)
+  }
+
   private func daysUntil(_ date: Date) -> Int {
     let calendar = Calendar.current
     let todayStart = calendar.startOfDay(for: Date())
@@ -232,10 +305,14 @@ struct HomeView: View {
   var body: some View {
     ScrollView {
       VStack(spacing: 16) {
-        AnniversaryCard(anniversaryDate: anniversaryDate, numberOfDays: daysUntilAnniversary)
-          // No memory yet: Anniversary becomes the focal surface and
-          // catches the flame in Latest Memory's place.
-          .candlelightCatchlight(environment.diaryStore.latestEntry == nil)
+        UsCard(
+          anniversaryDate: anniversaryDate,
+          daysTogether: daysTogether,
+          daysUntilAnniversary: daysUntilAnniversary
+        )
+        // No memory yet: Us becomes the focal surface and
+        // catches the flame in Latest Memory's place.
+        .candlelightCatchlight(environment.diaryStore.latestEntry == nil)
         if let latestEntry = environment.diaryStore.latestEntry {
           LatestMemoryCard(
             entry: latestEntry,
@@ -255,6 +332,30 @@ struct HomeView: View {
           }
           .buttonStyle(.plain)
         }
+
+        // The quiet tail. Each half appears only once it has something true
+        // to say — on a new couple's first day, Home is still one card.
+        VStack(alignment: .leading, spacing: 16) {
+          if let pick = resurfacedPick {
+            NavigationLink {
+              DiaryEntryDetailView(store: environment.diaryStore, entryID: pick.entry.id)
+            } label: {
+              ResurfacedMemoryWhisper(pick: pick)
+            }
+            .buttonStyle(.plain)
+          }
+
+          if environment.toDoStore.activeItemCount > 0 {
+            Button {
+              selectedTab = .ourList
+            } label: {
+              IdeasWaitingRow(count: environment.toDoStore.activeItemCount)
+            }
+            .buttonStyle(.plain)
+          }
+        }
+        .padding(.horizontal, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
       }
       .padding(.horizontal, 16)
       .padding(.vertical, 16)
