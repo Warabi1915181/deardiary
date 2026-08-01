@@ -9,6 +9,16 @@ no feature branches, no worktrees, no PRs. Exception: spin up a worktree
 only when running multiple agents in parallel that need isolated working
 trees.
 
+## Agent skills
+
+### Issue tracker
+
+Issues live in Linear — workspace **Mochiholic**, team **Dev** (key `DEV`) — via the `mcp__linear-mochiholic__*` MCP tools, not GitHub Issues. See `docs/agents/issue-tracker.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
 ## Verify UI in the Simulator
 
 When implementing designs or features, use the **/serve-sim** skill to drive the
