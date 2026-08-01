@@ -1,0 +1,19 @@
+# Gitignored paths a new worktree needs to be immediately usable.
+# `wt step copy-ignored` copies a path only if it is BOTH gitignored AND
+# matched here.
+#
+# NOTE: patterns match the entries git reports as ignored, and git reports a
+# wholesale-ignored directory as the directory itself. A pattern naming a file
+# *inside* such a directory matches nothing, and `[step.copy-ignored] exclude`
+# cannot subtract from within one either — it is all-or-nothing per entry.
+# Anything needed out of such a directory gets its own copy hook in
+# .config/wt.toml instead (see `spm`).
+#
+# Deliberately absent:
+#   .codegraph/            rebuilt by the `graph` post-start hook
+#   buildServer.json       rebuilt by the `lsp` post-start hook (it hardcodes
+#                          absolute paths to whichever checkout generated it)
+#   project.xcworkspace/   would drag in xcuserdata/ + *.xcuserstate
+
+.claude/settings.local.json
+.vscode/

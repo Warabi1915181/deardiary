@@ -1,0 +1,41 @@
+# worktrunk project config — see https://worktrunk.dev/hook/
+#
+# Worktrees are only used for running multiple agents in parallel (see
+# CLAUDE.md). These hooks make a fresh worktree usable without manual setup.
+#
+# Hooks run with cwd = the new worktree root, so destinations are plain
+# relative paths. Sources are not: this repo's path contains a space, and a
+# template expanded inline gets word-split even inside quotes. Passing it
+# through the environment and quoting it in the shell is the form that
+# survives.
+#
+# Two [[post-start]] blocks, not one [post-start] table: keys within a block
+# run concurrently, blocks run in order. Everything in block 1 must land
+# before `lsp` runs, because `xcode-build-server config` shells out to
+# xcodebuild, which re-resolves SPM if Package.resolved is not already there.
+
+[[post-start]]
+
+# Gitignored dev config, filtered by .worktreeinclude.
+copy = "wt step copy-ignored"
+
+# Package.resolved lives inside project.xcworkspace/, which is gitignored
+# wholesale — copy-ignored can only take that directory all-or-nothing, and
+# the rest of it is Xcode per-user noise. Copy just the SPM pin.
+spm = "env WT_SRC={{ primary_worktree_path }} sh -c 'D=\"Dear Diary.xcodeproj/project.xcworkspace/xcshareddata/swiftpm\"; mkdir -p \"$D\" && cp \"$WT_SRC/$D/Package.resolved\" \"$D/\"'"
+
+# Untracked and NOT gitignored, so copy-ignored cannot see them either.
+reference = "env WT_SRC={{ primary_worktree_path }} sh -c 'cp -R \"$WT_SRC/.reference\" .reference'"
+research = "env WT_SRC={{ primary_worktree_path }} sh -c 'cp -R \"$WT_SRC/docs/research\" docs/research'"
+
+[[post-start]]
+
+# buildServer.json is NOT copied: it hardcodes an absolute `workspace` and
+# `build_root` pointing at the checkout that generated it, so a copied one
+# would make SourceKit-LSP resolve symbols against the primary tree —
+# silently, with no build error. Regenerate it against this worktree instead.
+lsp = "xcode-build-server config -project 'Dear Diary.xcodeproj' -scheme 'Dear Diary'"
+
+# .codegraph/ is a SQLite index plus a daemon pidfile; copying it would carry
+# over stale paths and a dead pid. Build a fresh index for this worktree.
+graph = "codegraph init ."
