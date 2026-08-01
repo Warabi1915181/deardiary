@@ -5,7 +5,6 @@
 build/
 *.pbxuser
 *.xcuserstate
-project.xcworkspace/
 xcuserdata/
 
 # Backup files

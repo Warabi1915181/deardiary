@@ -10,21 +10,19 @@
 # survives.
 #
 # Two [[post-start]] blocks, not one [post-start] table: keys within a block
-# run concurrently, blocks run in order. Everything in block 1 must land
-# before `lsp` runs, because `xcode-build-server config` shells out to
-# xcodebuild, which re-resolves SPM if Package.resolved is not already there.
+# run concurrently, blocks run in order. Block 1 must finish before `lsp`
+# runs, since xcode-build-server shells out to xcodebuild against a tree that
+# should already be fully populated.
+#
+# Package.resolved needs no hook — it is tracked, so a worktree checks it out
+# with everything else and the first build resolves nothing.
 
 [[post-start]]
 
 # Gitignored dev config, filtered by .worktreeinclude.
 copy = "wt step copy-ignored"
 
-# Package.resolved lives inside project.xcworkspace/, which is gitignored
-# wholesale — copy-ignored can only take that directory all-or-nothing, and
-# the rest of it is Xcode per-user noise. Copy just the SPM pin.
-spm = "env WT_SRC={{ primary_worktree_path }} sh -c 'D=\"Dear Diary.xcodeproj/project.xcworkspace/xcshareddata/swiftpm\"; mkdir -p \"$D\" && cp \"$WT_SRC/$D/Package.resolved\" \"$D/\"'"
-
-# Untracked and NOT gitignored, so copy-ignored cannot see them either.
+# Untracked and NOT gitignored, so copy-ignored cannot see them.
 reference = "env WT_SRC={{ primary_worktree_path }} sh -c 'cp -R \"$WT_SRC/.reference\" .reference'"
 research = "env WT_SRC={{ primary_worktree_path }} sh -c 'cp -R \"$WT_SRC/docs/research\" docs/research'"
 
