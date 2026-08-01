@@ -4,6 +4,21 @@ Issues and PRDs for this repo live in **Linear**, workspace **Mochiholic**, team
 (key **DEV**, so identifiers read `DEV-<n>`). GitHub Issues on
 `Warabi1915181/deardiary` are **not** used — ignore them.
 
+## What lives where
+
+Specs, plans and the feature backlog live in Linear, in the **Dear Diary** project —
+not in this repo. There is no `FEATURE_IDEAS.md`; it was migrated to Linear on
+2026-08-01. Before proposing or starting a feature, read that project's issues rather
+than looking for a plan document in the tree.
+
+What stays in the repo, and remains authoritative:
+
+- `ARCHITECTURE.md` — sync design
+- `DESIGN.md` — visual direction
+- `CONTEXT.md` — domain vocabulary
+- `docs/adr/` — architectural decisions
+- `docs/agents/` — these conventions
+
 All operations go through the project-scoped Linear MCP tools
 (`mcp__linear-mochiholic__*`). `mcp__claude_ai_Linear__*` is a different workspace (the
 user's work Linear) — never create Dear Diary issues there. Do not shell out to
