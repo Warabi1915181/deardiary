@@ -40,7 +40,7 @@ struct ToDoView: View {
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 16) {
-        Text("Our List")
+        Text(handwritten: "Our List")
           .font(.screenTitle)
           .foregroundStyle(Color("RomanceForeground"))
 

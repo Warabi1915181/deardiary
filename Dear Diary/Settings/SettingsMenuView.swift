@@ -11,7 +11,7 @@ import UIKit
 struct SettingsMenuView: View {
   var body: some View {
     VStack(spacing: 16) {
-      Text("Settings")
+      Text(handwritten: "Settings")
         .font(.screenTitle)
       List {
         Section(header: Text("General")) {

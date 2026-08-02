@@ -11,7 +11,7 @@ struct PartnerMergePromptView: View {
         .foregroundStyle(Color("SageForeground"))
 
       VStack(spacing: 12) {
-        Text("Merge Your Local Diary?")
+        Text(handwritten: "Merge Your Local Diary?")
           .font(.entryTitle)
           .foregroundStyle(Color("RomanceForeground"))
 

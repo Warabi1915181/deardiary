@@ -191,7 +191,7 @@ private struct MilestoneRow: View {
 
           VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-              Text(milestone.title)
+              Text(handwritten: milestone.title)
                 .font(.cardTitle)
                 .foregroundStyle(Color("RomanceForeground"))
                 .lineLimit(1)

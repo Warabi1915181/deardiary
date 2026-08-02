@@ -17,7 +17,7 @@ struct DiaryView: View {
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 16) {
-        Text("Diary")
+        Text(handwritten: "Diary")
           .font(.screenTitle)
           .foregroundStyle(Color("RomanceForeground"))
 
@@ -124,7 +124,7 @@ private struct DiaryEntryCard: View {
             Text(entry.entryDate.formatted(date: .abbreviated, time: .omitted))
               .font(.metadata)
               .foregroundStyle(Color("PlumForeground"))
-            Text(entry.title)
+            Text(handwritten: entry.title)
               .font(.entryTitle)
               .foregroundStyle(Color("RomanceForeground"))
           }
@@ -182,7 +182,7 @@ struct DiaryEntryDetailView: View {
             .font(.body)
             .foregroundStyle(Color("PlumForeground"))
 
-          Text(entry.title)
+          Text(handwritten: entry.title)
             .font(.entryTitleLarge)
             .foregroundStyle(Color("RomanceForeground"))
 

@@ -55,3 +55,23 @@ extension Font {
   static let displayNumber = fancy(size: 40) // large focal number
   static let screenTitle = regularItalic(size: 48) // screen / nav header
 }
+
+extension Text {
+  /// Caveat's letters end in an exit stroke that reaches past the glyph's own
+  /// advance — roughly 7% of the point size. SwiftUI sizes a `Text` to the
+  /// typographic width and clips its drawing there, so mid-word the overhang
+  /// hides under the next letter but the *last* letter of a line comes out
+  /// sheared, most visibly on `u`, `y` and `g`.
+  ///
+  /// A trailing narrow no-break space widens the frame just enough to hold the
+  /// overhang. It has to be no-break: an ordinary space is trimmed before the
+  /// width is measured, which is why padding, `.frame`, `.fixedSize` and
+  /// `.tracking` all leave the shear in place.
+  ///
+  /// Use this for every Caveat role — `cardTitle`, `entryTitle`,
+  /// `entryTitleLarge`, `screenTitle`, `regularItalic`, `bold`. Patrick Hand
+  /// and Dancing Script sit inside their advances and don't need it.
+  init(handwritten text: String) {
+    self.init(text + "\u{202F}")
+  }
+}

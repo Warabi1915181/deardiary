@@ -66,14 +66,14 @@ struct LatestMemoryCard: View {
         HStack(alignment: .top, spacing: 4) {
           Image(systemName: "book.closed")
             .foregroundStyle(Color("RomanceForeground"))
-          Text("Latest Memory")
+          Text(handwritten: "Latest Memory")
             .font(headingFont)
             .lineLimit(2)
             .minimumScaleFactor(0.6)
             .allowsTightening(true)
         }
 
-        Text(entry.title)
+        Text(handwritten: entry.title)
           .font(.entryTitle)
           .foregroundStyle(Color("RomanceForeground"))
 
@@ -139,13 +139,13 @@ struct NextMilestoneCard: View {
             Image(systemName: icon)
               .foregroundStyle(isHeart ? Color("HeartRose") : Color("RomanceForeground"))
               .font(.system(size: 16))
-            Text("Something to look forward to")
+            Text(handwritten: "Something to look forward to")
               .font(headingFont)
               .lineLimit(2)
               .minimumScaleFactor(0.6)
               .allowsTightening(true)
           }
-          Text(title)
+          Text(handwritten: title)
             .font(.entryTitle)
             .foregroundStyle(Color("RomanceForeground"))
           Text(dateLine)
@@ -175,7 +175,7 @@ struct ResurfacedMemoryWhisper: View {
       Text(ResurfacedMemory.heading(for: pick))
         .font(.metadata)
         .foregroundStyle(Color("InkMuted"))
-      Text(pick.entry.title)
+      Text(handwritten: pick.entry.title)
         .font(.regularItalic(size: 24))
         .foregroundStyle(Color("RomanceForeground"))
         .multilineTextAlignment(.leading)
