@@ -318,6 +318,8 @@ struct DiaryEntryEditorView: View {
           TextField("cozy, trip, dinner", text: $tagsText)
             .textInputAutocapitalization(.never)
             .focused($focusedField, equals: .tags)
+            .submitLabel(.next)
+            .onSubmit(finalizeTagEntry)
           if !store.allTags.isEmpty {
             ScrollView(.horizontal, showsIndicators: false) {
               HStack(spacing: 8) {
@@ -424,11 +426,23 @@ struct DiaryEntryEditorView: View {
     tagsText = tags.joined(separator: ", ")
   }
 
+  /// Return key finalizes whatever tag is being typed: the field is rewritten to the
+  /// cleaned-up tag list with a trailing ", " so the next tag starts on a fresh token.
+  /// Focus is restored because `onSubmit` otherwise drops the keyboard.
+  private func finalizeTagEntry() {
+    let tags = parsedTags
+    tagsText = tags.isEmpty ? "" : tags.joined(separator: ", ") + ", "
+    focusedField = .tags
+  }
+
+  /// Comma is the only delimiter, so a tag may contain spaces. Duplicates are
+  /// dropped case-insensitively, keeping the first spelling the user typed.
   private var parsedTags: [String] {
-    tagsText
+    var seen: Set<String> = []
+    return tagsText
       .split(separator: ",")
       .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
-      .filter { !$0.isEmpty }
+      .filter { !$0.isEmpty && seen.insert($0.lowercased()).inserted }
   }
 
   private func save() {
