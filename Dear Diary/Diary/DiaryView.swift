@@ -264,6 +264,9 @@ struct DiaryEntryEditorView: View {
   @State private var errorMessage: String?
   @State private var isSaving = false
   @FocusState private var focusedField: Field?
+  /// The tags field is UIKit-backed, so it can't ride `@FocusState`: that only
+  /// holds values matching a SwiftUI focusable view and resets to nil otherwise.
+  @State private var isTagsFieldFocused = false
 
   private let entry: DiaryEntry?
   /// Fires with the new entry's id after a successful create, so a caller (e.g.
@@ -273,7 +276,10 @@ struct DiaryEntryEditorView: View {
   private enum Field: Hashable {
     case title
     case body
-    case tags
+  }
+
+  private var isEditingText: Bool {
+    focusedField != nil || isTagsFieldFocused
   }
 
   init(
@@ -315,11 +321,12 @@ struct DiaryEntryEditorView: View {
         .listRowBackground(Color("Surface"))
 
         Section("Tags") {
-          TextField("cozy, trip, dinner", text: $tagsText)
-            .textInputAutocapitalization(.never)
-            .focused($focusedField, equals: .tags)
-            .submitLabel(.next)
-            .onSubmit(finalizeTagEntry)
+          StickyTextField(
+            placeholder: "cozy, trip, dinner",
+            text: $tagsText,
+            isFocused: $isTagsFieldFocused,
+            onReturn: finalizeTagEntry
+          )
           if !store.allTags.isEmpty {
             ScrollView(.horizontal, showsIndicators: false) {
               HStack(spacing: 8) {
@@ -397,8 +404,19 @@ struct DiaryEntryEditorView: View {
       // Not a `.keyboard` toolbar item: the system draws that pill's glass flush
       // against the keyboard and no modifier on the button can lift it. A bottom
       // safe-area inset rides above the keyboard and lets us set the gap.
+      // The two focus worlds are mutually exclusive: taking one drops the other.
+      .onChange(of: focusedField) { _, newValue in
+        if newValue != nil {
+          isTagsFieldFocused = false
+        }
+      }
+      .onChange(of: isTagsFieldFocused) { _, newValue in
+        if newValue {
+          focusedField = nil
+        }
+      }
       .safeAreaInset(edge: .bottom) {
-        if focusedField != nil {
+        if isEditingText {
           HStack {
             Spacer()
             // `.buttonStyle(.glass)` renders the capsule but stays inert under
@@ -406,6 +424,7 @@ struct DiaryEntryEditorView: View {
             // draggable feel when pressed.
             Button {
               focusedField = nil
+              isTagsFieldFocused = false
             } label: {
               Text("Done")
                 .font(.bodyEmphasis)
@@ -448,11 +467,10 @@ struct DiaryEntryEditorView: View {
 
   /// Return key finalizes whatever tag is being typed: the field is rewritten to the
   /// cleaned-up tag list with a trailing ", " so the next tag starts on a fresh token.
-  /// Focus is restored because `onSubmit` otherwise drops the keyboard.
+  /// `StickyTextField` holds first responder across this, so focus needs no repair.
   private func finalizeTagEntry() {
     let tags = parsedTags
     tagsText = tags.isEmpty ? "" : tags.joined(separator: ", ") + ", "
-    focusedField = .tags
   }
 
   /// Comma is the only delimiter, so a tag may contain spaces. Duplicates are
@@ -500,6 +518,92 @@ struct DiaryEntryEditorView: View {
         errorMessage = error.localizedDescription
       }
       isSaving = false
+    }
+  }
+}
+
+/// A single-line text field that keeps first responder when Return is pressed.
+///
+/// SwiftUI's `onSubmit` resigns first responder *before* it fires. Inside a Form
+/// that momentary focus loss tears down the keyboard's safe-area inset and snaps
+/// the scroll offset to the top, then re-focusing scrolls back — a visible round
+/// trip on every finalized tag. Returning `false` from `textFieldShouldReturn`
+/// never resigns, so nothing moves.
+private struct StickyTextField: UIViewRepresentable {
+  let placeholder: String
+  @Binding var text: String
+  @Binding var isFocused: Bool
+  let onReturn: () -> Void
+
+  func makeUIView(context: Context) -> UITextField {
+    let field = UITextField()
+    field.delegate = context.coordinator
+    field.placeholder = placeholder
+    // Matches the global `.font(.body)` the rest of the form inherits.
+    field.font = UIFont(name: "PatrickHand-Regular", size: 16)
+    field.autocapitalizationType = .none
+    field.autocorrectionType = .no
+    field.returnKeyType = .next
+    field.enablesReturnKeyAutomatically = false
+    field.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+    field.addTarget(
+      context.coordinator,
+      action: #selector(Coordinator.editingChanged(_:)),
+      for: .editingChanged
+    )
+    return field
+  }
+
+  func updateUIView(_ field: UITextField, context: Context) {
+    context.coordinator.parent = self
+    // Only push the binding back into the field when the change came from
+    // outside it (a suggestion chip, the return key rewrite). Echoing the
+    // field's own keystrokes back races the state update and truncates typing.
+    if field.text != text, text != context.coordinator.lastSentText {
+      field.text = text
+    }
+    if isFocused, !field.isFirstResponder {
+      field.becomeFirstResponder()
+    } else if !isFocused, field.isFirstResponder {
+      field.resignFirstResponder()
+    }
+  }
+
+  func makeCoordinator() -> Coordinator {
+    Coordinator(parent: self)
+  }
+
+  final class Coordinator: NSObject, UITextFieldDelegate {
+    var parent: StickyTextField
+    /// The last value this field pushed up, so `updateUIView` can tell its own
+    /// echo apart from an outside edit.
+    private(set) var lastSentText: String?
+
+    init(parent: StickyTextField) {
+      self.parent = parent
+    }
+
+    @objc func editingChanged(_ field: UITextField) {
+      let value = field.text ?? ""
+      lastSentText = value
+      parent.text = value
+    }
+
+    func textFieldDidBeginEditing(_: UITextField) {
+      if !parent.isFocused {
+        parent.isFocused = true
+      }
+    }
+
+    func textFieldDidEndEditing(_: UITextField) {
+      if parent.isFocused {
+        parent.isFocused = false
+      }
+    }
+
+    func textFieldShouldReturn(_: UITextField) -> Bool {
+      parent.onReturn()
+      return false
     }
   }
 }
