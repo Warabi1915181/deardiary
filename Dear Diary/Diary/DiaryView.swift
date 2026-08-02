@@ -393,11 +393,22 @@ struct DiaryEntryEditorView: View {
           }
           .disabled(isSaving)
         }
-        ToolbarItemGroup(placement: .keyboard) {
-          Spacer()
-          Button("Done") {
-            focusedField = nil
+      }
+      // Not a `.keyboard` toolbar item: the system draws that pill's glass flush
+      // against the keyboard and no modifier on the button can lift it. A bottom
+      // safe-area inset rides above the keyboard and lets us set the gap.
+      .safeAreaInset(edge: .bottom) {
+        if focusedField != nil {
+          HStack {
+            Spacer()
+            Button("Done") {
+              focusedField = nil
+            }
+            .buttonStyle(.bordered)
+            .tint(Color("RomanceForeground"))
           }
+          .padding(.horizontal, 16)
+          .padding(.bottom, 8)
         }
       }
     }
