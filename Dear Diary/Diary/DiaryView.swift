@@ -401,11 +401,20 @@ struct DiaryEntryEditorView: View {
         if focusedField != nil {
           HStack {
             Spacer()
-            Button("Done") {
+            // `.buttonStyle(.glass)` renders the capsule but stays inert under
+            // touch; the interactive glass is what gives it the springy, faintly
+            // draggable feel when pressed.
+            Button {
               focusedField = nil
+            } label: {
+              Text("Done")
+                .font(.bodyEmphasis)
+                .foregroundStyle(Color("RomanceForeground"))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
             }
-            .buttonStyle(.bordered)
-            .tint(Color("RomanceForeground"))
+            .buttonStyle(.plain)
+            .glassEffect(.regular.interactive(), in: .capsule)
           }
           .padding(.horizontal, 16)
           .padding(.bottom, 8)
