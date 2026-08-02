@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import UniformTypeIdentifiers
 
 struct ToDoView: View {
   enum Segment: String, CaseIterable {
@@ -21,14 +20,20 @@ struct ToDoView: View {
     }
   }
 
+  /// Coordinate space the reorder measures everything in: row frames, section
+  /// frames, and the drag gesture all resolve against the scrolling content.
+  private static let listSpace = "ourListContent"
+
   var store: ToDoStore
   var diaryStore: DiaryStore
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @State private var selectedSegment: Segment = .active
   @State private var showingNewItemSheet = false
   @State private var showingNewCategorySheet = false
   @State private var showingRenameCategorySheet = false
   @State private var categoryForRename: ToDoCategory?
-  @State private var draggingItemID: UUID?
+  @State private var reorder = ToDoReorderModel()
+  @State private var scrollPosition = ScrollPosition()
   @State private var pendingCompletionIDs: Set<UUID> = []
   @State private var bridgingItem: ToDoItem?
 
@@ -59,7 +64,58 @@ struct ToDoView: View {
       }
       .padding(.horizontal, 16)
       .padding(.vertical, 16)
+      .onGeometryChange(for: ToDoReorderModel.ContentAnchor.self) { proxy in
+        ToDoReorderModel.ContentAnchor(
+          listY: proxy.frame(in: .named(Self.listSpace)).minY,
+          screenY: proxy.frame(in: .global).minY
+        )
+      } action: { anchor in
+        reorder.setAnchor(anchor)
+      }
     }
+    .onGeometryChange(for: CGRect.self) { proxy in
+      proxy.frame(in: .global)
+    } action: { rect in
+      reorder.setListFrame(rect)
+    }
+    .coordinateSpace(.named(Self.listSpace))
+    .gesture(reorderGesture)
+    .scrollDisabled(reorder.isDragging)
+    .scrollPosition($scrollPosition)
+    .onScrollGeometryChange(for: ToDoReorderModel.ScrollMetrics.self) { geometry in
+      ToDoReorderModel.ScrollMetrics(
+        offsetY: geometry.contentOffset.y,
+        containerHeight: geometry.containerSize.height,
+        contentHeight: geometry.contentSize.height,
+        topInset: geometry.contentInsets.top,
+        bottomInset: geometry.contentInsets.bottom
+      )
+    } action: { _, metrics in
+      reorder.scrollChanged(metrics)
+    }
+    .overlay {
+      if let item = reorder.draggedItem, let lift = reorder.lift {
+        FloatingToDoCard(
+          item: item,
+          status: selectedSegment.status,
+          hasLinkedMemory: linkedEntryExists(for: item),
+          reduceMotion: reduceMotion
+        )
+        .frame(width: lift.rowRect.width)
+        .position(x: lift.rowRect.midX, y: reorder.cardViewportY)
+        .allowsHitTesting(false)
+        .transition(.opacity)
+      }
+    }
+    .task(id: reorder.isDragging) {
+      await runAutoScroll()
+    }
+    // A drag can only survive while the list it measured is still on screen.
+    .onChange(of: selectedSegment) { reorder.cancel() }
+    .onDisappear { reorder.cancel() }
+    .sensoryFeedback(.impact(weight: .light, intensity: 0.8), trigger: reorder.liftCount)
+    .sensoryFeedback(.selection, trigger: reorder.shuffleCount)
+    .sensoryFeedback(.impact(weight: .light, intensity: 0.5), trigger: reorder.dropCount)
     .toolbar {
       ToolbarItem(placement: .topBarTrailing) {
         Menu {
@@ -128,7 +184,10 @@ struct ToDoView: View {
   private var categorySections: some View {
     VStack(spacing: 12) {
       ForEach(store.categories) { category in
-        let items = store.items(for: selectedSegment.status, in: category.id)
+        let items = reorder.displayItems(
+          for: category.id,
+          storeItems: store.items(for: selectedSegment.status, in: category.id)
+        )
         VStack(alignment: .leading, spacing: 8) {
           ToDoCategoryHeader(
             category: category,
@@ -142,67 +201,168 @@ struct ToDoView: View {
             }
           )
 
-          VStack(spacing: 8) {
-            if items.isEmpty {
+          let slots = reorderSlots(for: category, items: items)
+          VStack(spacing: ToDoReorderModel.rowSpacing) {
+            // A section holding nothing but the collapsed lifted row still
+            // reads as empty, so it keeps its placeholder. The rows are always
+            // rendered alongside it — dropping the lifted one from the
+            // hierarchy would take the in-flight gesture with it.
+            if slots.allSatisfy({ $0.isCollapsed(draggingItemID: reorder.draggingItemID) }) {
               Text(selectedSegment == .active ? "No dreams here yet." : "Nothing done here yet.")
                 .font(.metadata)
                 .foregroundStyle(Color("PlumForeground"))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-            } else {
-              ForEach(items) { item in
-                ToDoItemRow(
-                  item: item,
-                  isPendingCompletion: pendingCompletionIDs.contains(item.id),
-                  status: selectedSegment.status,
-                  hasLinkedMemory: linkedEntryExists(for: item),
-                  onToggleComplete: {
-                    toggle(item: item)
-                  },
-                  onWriteMemory: {
-                    bridgingItem = item
-                  },
-                  onDelete: {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                      store.deleteItem(id: item.id)
-                    }
-                  }
-                )
-                .onDrag {
-                  draggingItemID = item.id
-                  return NSItemProvider(object: item.id.uuidString as NSString)
-                }
-                .onDrop(
-                  of: [UTType.text],
-                  delegate: ToDoItemDropDelegate(
-                    destinationItemID: item.id,
-                    destinationCategoryID: category.id,
-                    status: selectedSegment.status,
-                    store: store,
-                    draggingItemID: $draggingItemID
-                  )
-                )
+            }
+            ForEach(slots) { slot in
+              switch slot {
+              case let .row(item): itemRow(item)
+              case let .gap(height): Color.clear.frame(height: height)
               }
             }
           }
           .padding(12)
-          .background(
-            RoundedRectangle(cornerRadius: 12)
-              .fill(Color("RomanceBackground"))
-          )
-          .onDrop(
-            of: [UTType.text],
-            delegate: ToDoCategoryDropDelegate(
-              categoryID: category.id,
-              status: selectedSegment.status,
-              store: store,
-              draggingItemID: $draggingItemID
-            )
-          )
+          .background(categoryBackground(for: category))
+          // Only the gap moving animates here; the floating card tracks the
+          // finger frame-for-frame and must stay out of this animation.
+          .animation(shuffleAnimation, value: slots.map(\.id))
+        }
+        .onGeometryChange(for: CGRect.self) { proxy in
+          proxy.frame(in: .named(Self.listSpace))
+        } action: { rect in
+          reorder.setCategoryFrame(rect, for: category.id)
         }
       }
     }
+  }
+
+  /// A section's rows with the drop gap spliced in. The lifted card stays in
+  /// this list at its original position but collapses to nothing, so the gap
+  /// alone expresses where it will land — including in another section.
+  private func reorderSlots(for category: ToDoCategory, items: [ToDoItem]) -> [ToDoSlot] {
+    var slots = items.map { ToDoSlot.row($0) }
+    guard let gapIndex = reorder.gapIndex(for: category.id) else { return slots }
+
+    var remaining = gapIndex
+    var insertAt = slots.count
+    for (offset, slot) in slots.enumerated() {
+      guard case let .row(item) = slot, item.id != reorder.draggingItemID else { continue }
+      if remaining == 0 {
+        insertAt = offset
+        break
+      }
+      remaining -= 1
+    }
+    slots.insert(.gap(reorder.liftHeight), at: insertAt)
+    return slots
+  }
+
+  private func itemRow(_ item: ToDoItem) -> some View {
+    ToDoItemRow(
+      item: item,
+      isPendingCompletion: pendingCompletionIDs.contains(item.id),
+      status: selectedSegment.status,
+      hasLinkedMemory: linkedEntryExists(for: item),
+      onToggleComplete: {
+        toggle(item: item)
+      },
+      onWriteMemory: {
+        bridgingItem = item
+      },
+      onDelete: {
+        withAnimation(.easeInOut(duration: 0.2)) {
+          store.deleteItem(id: item.id)
+        }
+      }
+    )
+    // The lifted card is drawn in the overlay instead. Its row stays in the
+    // hierarchy — destroying it would take the in-flight gesture with it — but
+    // collapses away so only the gap marks where the card will land. The
+    // negative padding cancels the stack spacing the empty row would leave.
+    .modifier(CollapsedWhileLifted(isLifted: reorder.draggingItemID == item.id))
+    .onGeometryChange(for: CGRect.self) { proxy in
+      proxy.frame(in: .named(Self.listSpace))
+    } action: { rect in
+      reorder.setRowFrame(rect, for: item.id)
+    }
+  }
+
+  private func categoryBackground(for category: ToDoCategory) -> some View {
+    let isTarget = reorder.isDropTarget(category.id)
+    return RoundedRectangle(cornerRadius: 12)
+      .fill(Color("RomanceBackground"))
+      .overlay {
+        RoundedRectangle(cornerRadius: 12)
+          .strokeBorder(Color("RomanceForeground").opacity(isTarget ? 0.4 : 0), lineWidth: 1)
+      }
+      .animation(shuffleAnimation, value: isTarget)
+  }
+
+  /// Press and hold anywhere on a card to lift it — no drag handle, and a plain
+  /// tap still reaches the buttons inside the row.
+  ///
+  /// It hangs off the scroll view rather than off each row, which is the only
+  /// placement that leaves scrolling intact: attached to the rows or to the
+  /// content, the scroll view defers its own pan to this gesture and the list
+  /// stops scrolling altogether. The trade is that the scroll view wins the
+  /// touch by default, so `scrollDisabled` hands it back once a card is in the
+  /// air. Which card was grabbed is resolved from the press location.
+  private var reorderGesture: some Gesture {
+    LongPressGesture(minimumDuration: 0.3, maximumDistance: 12)
+      .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .named(Self.listSpace)))
+      .onChanged { value in
+        guard case let .second(true, drag) = value, let drag else { return }
+        if !reorder.isDragging {
+          _ = withAnimation(liftAnimation) {
+            reorder.begin(at: drag.startLocation, buckets: currentBuckets)
+          }
+        }
+        reorder.updateFinger(listY: drag.location.y)
+      }
+      .onEnded { _ in
+        guard reorder.isDragging else { return }
+        withAnimation(dropAnimation) {
+          reorder.drop(store: store, status: selectedSegment.status)
+        }
+      }
+  }
+
+  /// The list as the store has it right now — the baseline a drag freezes.
+  private var currentBuckets: [(id: UUID, items: [ToDoItem])] {
+    store.categories.map { category in
+      (category.id, store.items(for: selectedSegment.status, in: category.id))
+    }
+  }
+
+  /// Nudges the list along while the finger rests near the top or bottom edge.
+  private func runAutoScroll() async {
+    guard reorder.isDragging else { return }
+    let step = Duration.milliseconds(16)
+    while !Task.isCancelled, reorder.isDragging {
+      try? await Task.sleep(for: step)
+      let velocity = reorder.autoScrollVelocity
+      guard velocity != 0 else { continue }
+      let metrics = reorder.scroll
+      let proposed = metrics.offsetY + velocity * 0.016
+      let clamped = reorder.clampedOffset(proposed)
+      guard clamped != metrics.offsetY else { continue }
+      scrollPosition.scrollTo(y: clamped + metrics.topInset)
+    }
+  }
+
+  // Reduce Motion keeps the reorder legible — it is functional feedback, not
+  // atmosphere — but trades the springs for a plain fade and drops the lift.
+  private var liftAnimation: Animation {
+    reduceMotion ? .easeInOut(duration: 0.18) : .reorderLift
+  }
+
+  private var shuffleAnimation: Animation {
+    reduceMotion ? .easeInOut(duration: 0.2) : .reorderShuffle
+  }
+
+  private var dropAnimation: Animation {
+    reduceMotion ? .easeInOut(duration: 0.2) : .reorderDrop
   }
 
   private var emptyState: some View {
@@ -518,46 +678,86 @@ private struct RenameCategorySheet: View {
   }
 }
 
-private struct ToDoItemDropDelegate: DropDelegate {
-  let destinationItemID: UUID
-  let destinationCategoryID: UUID
-  let status: ToDoStatus
-  let store: ToDoStore
-  @Binding var draggingItemID: UUID?
+/// One entry in a section's stack: either a real row, or the gap the lifted
+/// card will drop into.
+private enum ToDoSlot: Identifiable {
+  case row(ToDoItem)
+  case gap(CGFloat)
 
-  func performDrop(info _: DropInfo) -> Bool {
-    guard let draggingItemID, draggingItemID != destinationItemID else { return false }
-    withAnimation(.easeInOut(duration: 0.2)) {
-      store.moveItem(
-        id: draggingItemID,
-        targetCategoryID: destinationCategoryID,
-        targetStatus: status,
-        before: destinationItemID
-      )
+  var id: String {
+    switch self {
+    case let .row(item): item.id.uuidString
+    case .gap: "reorder-gap"
     }
-    self.draggingItemID = nil
-    return true
+  }
+
+  /// True when this slot takes up no space — the lifted card's own row.
+  func isCollapsed(draggingItemID: UUID?) -> Bool {
+    guard case let .row(item) = self else { return false }
+    return item.id == draggingItemID
   }
 }
 
-private struct ToDoCategoryDropDelegate: DropDelegate {
-  let categoryID: UUID
-  let status: ToDoStatus
-  let store: ToDoStore
-  @Binding var draggingItemID: UUID?
+/// Collapses the lifted card's row out of the stack without removing it, so the
+/// gesture it hosts stays alive for the rest of the drag.
+private struct CollapsedWhileLifted: ViewModifier {
+  let isLifted: Bool
 
-  func performDrop(info _: DropInfo) -> Bool {
-    guard let draggingItemID else { return false }
-    withAnimation(.easeInOut(duration: 0.2)) {
-      store.moveItem(
-        id: draggingItemID,
-        targetCategoryID: categoryID,
-        targetStatus: status,
-        before: nil
-      )
+  func body(content: Content) -> some View {
+    content
+      .opacity(isLifted ? 0 : 1)
+      .frame(height: isLifted ? 0 : nil)
+      .clipped()
+      .padding(.vertical, isLifted ? -ToDoReorderModel.rowSpacing / 2 : 0)
+  }
+}
+
+/// The card that follows the finger. It is a copy of the row rendered above the
+/// scroll view, so it can cross section boundaries without being clipped, and
+/// it grows into its lifted state on appear rather than popping in already big.
+private struct FloatingToDoCard: View {
+  let item: ToDoItem
+  let status: ToDoStatus
+  let hasLinkedMemory: Bool
+  let reduceMotion: Bool
+
+  @Environment(\.colorScheme) private var colorScheme
+  @State private var lifted = false
+
+  var body: some View {
+    ToDoItemRow(
+      item: item,
+      isPendingCompletion: false,
+      status: status,
+      hasLinkedMemory: hasLinkedMemory,
+      onToggleComplete: {},
+      onWriteMemory: {},
+      onDelete: {}
+    )
+    .overlay(
+      // Elevation follows the house convention: a warm-tinted shadow by
+      // Morning, and — since Warm Shadow resolves to clear at night — an ember
+      // rim doing the lifting in Candlelight.
+      RoundedRectangle(cornerRadius: 12, style: .continuous)
+        .strokeBorder(
+          LinearGradient(
+            colors: [
+              Color("RomanceForeground").opacity(0.32),
+              Color("RomanceForeground").opacity(0.06),
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+          ),
+          lineWidth: 1
+        )
+        .opacity(colorScheme == .dark ? (lifted ? 1 : 0) : 0)
+    )
+    .scaleEffect(lifted ? 1.03 : 1)
+    .shadow(color: Color("WarmShadow").opacity(lifted ? 0.24 : 0), radius: 16, y: 8)
+    .onAppear {
+      guard !reduceMotion else { return }
+      withAnimation(.reorderLift) { lifted = true }
     }
-    self.draggingItemID = nil
-    return true
   }
 }
 
