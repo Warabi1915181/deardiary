@@ -317,6 +317,20 @@ struct DiaryEntryEditorView: View {
           TextEditor(text: $bodyText)
             .frame(minHeight: 160)
             .focused($focusedField, equals: .body)
+            // TextEditor has no prompt of its own; the overlay sits on the
+            // editor's own text inset so the placeholder lines up with the
+            // caret rather than floating beside it.
+            .overlay(alignment: .topLeading) {
+              if bodyText.isEmpty {
+                Text("What's your memory?")
+                  .font(.body)
+                  // Same colour the Title and tags fields' prompts draw in.
+                  .foregroundStyle(Color(uiColor: .placeholderText))
+                  .padding(.horizontal, 4)
+                  .padding(.vertical, 8)
+                  .allowsHitTesting(false)
+              }
+            }
         }
         .listRowBackground(Color("Surface"))
 
