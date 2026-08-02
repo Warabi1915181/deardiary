@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct ToDoView: View {
   enum Segment: String, CaseIterable {
@@ -308,24 +309,29 @@ struct ToDoView: View {
   /// stops scrolling altogether. The trade is that the scroll view wins the
   /// touch by default, so `scrollDisabled` hands it back once a card is in the
   /// air. Which card was grabbed is resolved from the press location.
-  private var reorderGesture: some Gesture {
-    LongPressGesture(minimumDuration: 0.3, maximumDistance: 12)
-      .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .named(Self.listSpace)))
-      .onChanged { value in
-        guard case let .second(true, drag) = value, let drag else { return }
-        if !reorder.isDragging {
-          _ = withAnimation(liftAnimation) {
-            reorder.begin(at: drag.startLocation, buckets: currentBuckets)
-          }
+  private var reorderGesture: ToDoReorderGesture {
+    ToDoReorderGesture(
+      coordinateSpaceName: Self.listSpace,
+      onBegan: { point in
+        _ = withAnimation(liftAnimation) {
+          reorder.begin(at: point, buckets: currentBuckets)
         }
-        reorder.updateFinger(listY: drag.location.y)
-      }
-      .onEnded { _ in
+      },
+      onChanged: { point in
+        reorder.updateFinger(listY: point.y)
+      },
+      onEnded: {
         guard reorder.isDragging else { return }
         withAnimation(dropAnimation) {
           reorder.drop(store: store, status: selectedSegment.status)
         }
+      },
+      onCancelled: {
+        withAnimation(dropAnimation) {
+          reorder.cancel()
+        }
       }
+    )
   }
 
   /// The list as the store has it right now — the baseline a drag freezes.
@@ -435,6 +441,46 @@ private struct ToDoCategoryHeader: View {
             .foregroundStyle(Color("PlumForeground"))
         }
       }
+    }
+  }
+}
+
+/// A location-aware long press attached to the scroll view. SwiftUI's
+/// `LongPressGesture.sequenced(before:)` does not expose a location until its
+/// trailing drag emits a value, which delays the visual lift until the finger
+/// moves. UIKit reports the location as soon as the long press begins.
+private struct ToDoReorderGesture: UIGestureRecognizerRepresentable {
+  let coordinateSpaceName: String
+  let onBegan: (CGPoint) -> Void
+  let onChanged: (CGPoint) -> Void
+  let onEnded: () -> Void
+  let onCancelled: () -> Void
+
+  func makeUIGestureRecognizer(context _: Context) -> UILongPressGestureRecognizer {
+    let recognizer = UILongPressGestureRecognizer()
+    recognizer.minimumPressDuration = 0.3
+    recognizer.allowableMovement = 12
+    return recognizer
+  }
+
+  func handleUIGestureRecognizerAction(
+    _ recognizer: UILongPressGestureRecognizer,
+    context: Context
+  ) {
+    let point = context.converter.location(in: .named(coordinateSpaceName))
+    switch recognizer.state {
+    case .began:
+      onBegan(point)
+    case .changed:
+      onChanged(point)
+    case .ended:
+      onEnded()
+    case .cancelled, .failed:
+      onCancelled()
+    case .possible:
+      break
+    @unknown default:
+      onCancelled()
     }
   }
 }
