@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <g stroke="#89613F" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Back pages: narrow, hand-drawn offsets visible at right and foot. -->
+    <path
+      d="M759 174 C787 178 801 193 806 217 C812 315 813 429 815 538 L821 802 C822 833 810 853 788 858 L270 858 C252 858 240 849 237 836"
+      fill="#F8D9AD"
+      stroke-width="9"
+    />
+    <path
+      d="M773 184 C802 189 815 205 819 230 C825 327 825 435 827 544 L832 797 C833 827 823 848 803 857"
+      fill="none"
+      stroke-width="6"
+      opacity="0.9"
+    />
+    <path
+      d="M787 198 C815 204 827 222 830 248 C835 353 835 458 836 560 L840 784 C841 815 833 838 816 851"
+      fill="none"
+      stroke-width="5"
+      opacity="0.76"
+    />
+
+    <!-- Front paper cover. Irregular contour follows locked painted reference. -->
+    <path
+      d="M257 157 C348 143 431 150 515 150 C603 151 690 145 739 151 C758 153 766 168 768 189 C772 319 771 448 771 579 L772 768 C772 794 760 806 741 809 C603 814 457 810 326 812 L250 811 C238 810 231 800 231 783 L235 193 C237 174 243 162 257 157 Z"
+      fill="#F7D7A7"
+      stroke-width="9"
+    />
+
+    <!-- Exposed page leaves along bottom. -->
+    <path d="M241 802 C343 808 464 806 575 806 C648 806 711 806 767 801" fill="none" stroke-width="7"/>
+    <path d="M246 819 C367 824 487 822 599 822 C670 822 729 821 780 815" fill="none" stroke-width="5" opacity="0.84"/>
+    <path d="M252 837 C378 841 500 839 615 839 C688 839 748 838 792 831" fill="none" stroke-width="5" opacity="0.72"/>
+
+    <!-- Faint paper variation only; no baked gloss or material lighting. -->
+    <path d="M276 181 C395 167 626 170 735 181" fill="none" stroke="#FBE6C4" stroke-width="8" opacity="0.34"/>
+  </g>
+</svg>

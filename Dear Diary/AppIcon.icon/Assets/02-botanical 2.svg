@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <g stroke="#89613F" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Pressed stems, tucked beneath cord. -->
+    <path d="M465 585 C461 536 454 484 444 438 C437 407 436 378 452 356" fill="none" stroke-width="5"/>
+    <path d="M445 503 C465 468 483 444 501 424" fill="none" stroke-width="5"/>
+
+    <!-- Broad asymmetric sage leaf from locked reference. -->
+    <path
+      d="M444 507 C406 493 368 469 346 437 C323 403 315 354 320 303 C366 316 407 346 430 384 C452 420 456 467 444 507 Z"
+      fill="#A8A573"
+      stroke-width="7"
+    />
+    <path d="M335 327 C368 367 397 410 438 490" fill="none" stroke-width="5"/>
+    <path d="M356 353 L351 393 M379 382 L370 421 M401 416 L388 451 M419 451 L405 474" fill="none" stroke-width="4" opacity="0.82"/>
+
+    <!-- Two mismatched flowers, spaced like original couple motif. -->
+    <g transform="translate(458 383) rotate(-7)">
+      <path d="M0 -27 C12 -33 22 -24 20 -12 C31 -15 39 -5 34 6 C41 16 31 27 20 24 C16 36 3 37 -4 27 C-14 35 -27 28 -27 16 C-38 12 -38 -2 -27 -8 C-31 -20 -18 -30 -8 -23 C-6 -27 -3 -28 0 -27 Z" fill="#E8A09A" stroke-width="5"/>
+      <circle cx="1" cy="4" r="7" fill="#C87870" stroke-width="3"/>
+    </g>
+    <g transform="translate(502 420) rotate(10)">
+      <path d="M0 -25 C11 -31 21 -22 19 -11 C30 -13 36 -3 32 7 C38 16 29 25 19 23 C14 33 3 34 -4 25 C-14 32 -25 25 -25 14 C-35 10 -35 -2 -25 -8 C-28 -18 -17 -27 -8 -21 C-5 -24 -3 -25 0 -25 Z" fill="#B77F8B" stroke-width="5"/>
+      <circle cx="0" cy="3" r="6" fill="#8F5E69" stroke-width="3"/>
+    </g>
+  </g>
+</svg>

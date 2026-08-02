@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Slim, gently wavering cord around notebook. -->
+    <path d="M226 511 C327 505 407 508 481 520 C570 527 691 503 828 526" stroke="#89613F" stroke-width="20"/>
+    <path d="M226 511 C327 505 407 508 481 520 C570 527 691 503 828 526" stroke="#DC7E77" stroke-width="10"/>
+
+    <!-- Continuous heart loop: smaller, higher, and less geometric than prior version. -->
+    <path
+      d="M513 536 C490 521 462 496 463 475 C464 454 480 443 497 449 C510 453 519 466 527 479 C537 462 548 451 563 450 C582 449 594 465 591 483 C587 506 563 525 520 554"
+      stroke="#89613F"
+      stroke-width="20"
+    />
+    <path
+      d="M513 536 C490 521 462 496 463 475 C464 454 480 443 497 449 C510 453 519 466 527 479 C537 462 548 451 563 450 C582 449 594 465 591 483 C587 506 563 525 520 554"
+      stroke="#DC7E77"
+      stroke-width="10"
+    />
+
+    <!-- Compact knot and unequal hand-tied tails. -->
+    <path d="M502 542 C511 532 530 531 542 541 C548 549 540 561 525 564 C512 565 499 558 498 550 C498 547 499 544 502 542 Z" fill="#DC7E77" stroke="#89613F" stroke-width="7"/>
+    <path d="M518 559 C504 600 489 648 468 691 C456 718 443 739 431 746" stroke="#89613F" stroke-width="20"/>
+    <path d="M518 559 C504 600 489 648 468 691 C456 718 443 739 431 746" stroke="#DC7E77" stroke-width="10"/>
+    <path d="M530 560 C544 595 557 621 577 645 C593 664 598 680 590 688" stroke="#89613F" stroke-width="20"/>
+    <path d="M530 560 C544 595 557 621 577 645 C593 664 598 680 590 688" stroke="#DC7E77" stroke-width="10"/>
+  </g>
+</svg>

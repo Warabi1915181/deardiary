@@ -1,0 +1,64 @@
+{
+  "fill" : {
+    "automatic-gradient" : "display-p3:0.96471,0.81176,0.78039,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "image-name" : "03-cord-heart 2.svg",
+          "name" : "03-cord-heart 2"
+        }
+      ],
+      "name" : "03 Cord Heart",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    },
+    {
+      "layers" : [
+        {
+          "image-name" : "02-botanical 2.svg",
+          "name" : "02-botanical 2"
+        }
+      ],
+      "name" : "02 Botanical",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    },
+    {
+      "layers" : [
+        {
+          "image-name" : "01-diary 2.svg",
+          "name" : "01-diary 2"
+        }
+      ],
+      "name" : "01 Diary",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}
