@@ -314,10 +314,15 @@ struct HomeView: View {
         // catches the flame in Latest Memory's place.
         .candlelightCatchlight(environment.diaryStore.latestEntry == nil)
         if let latestEntry = environment.diaryStore.latestEntry {
-          LatestMemoryCard(
-            entry: latestEntry,
-            photoURL: latestEntry.photos.first.map { environment.diaryStore.photoURL(for: $0) }
-          )
+          NavigationLink {
+            DiaryEntryDetailView(store: environment.diaryStore, entryID: latestEntry.id)
+          } label: {
+            LatestMemoryCard(
+              entry: latestEntry,
+              photoURL: latestEntry.photos.first.map { environment.diaryStore.photoURL(for: $0) }
+            )
+          }
+          .buttonStyle(.plain)
         }
         if let candidate = nextMilestoneCandidate {
           NavigationLink {
